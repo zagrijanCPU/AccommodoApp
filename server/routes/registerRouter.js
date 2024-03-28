@@ -1,9 +1,9 @@
 const express = require('express');
-const bcrypt = require('bcrypt');
-const router = express.Router();
 const pool = require('../config/db');
+const router = express.Router();
+const bcrypt = require('bcrypt');
 
-router.post('/addUser', async (req, res) => {
+router.post('/', async (req, res) => {
    const { idUloge, korisnickoIme, ime, prezime, email, lozinka } = req.body;
    console.log(req.body);
 
@@ -11,9 +11,10 @@ router.post('/addUser', async (req, res) => {
 
       const query = `SELECT * 
                      FROM KORISNIK
-                     WHERE korisnickoIme = $1`;
-      
-      const { rows } = await pool.query(query, [korisnickoIme]);
+                     WHERE korisnickoIme = $1 OR
+                     email = $2`;
+
+      const { rows } = await pool.query(query, [korisnickoIme, email]);
 
       // console.log(rows);
       if (rows.length == 0) {
@@ -26,10 +27,10 @@ router.post('/addUser', async (req, res) => {
                const query = `INSERT INTO KORISNIK (iduloge, korisnickoIme, ime, prezime, email, lozinka) 
                               VALUES ($1, $2, $3, $4, $5, $6)
                               RETURNING idUloge, korisnickoIme, ime, prezime, email`
-               
+
                const { rows } = await pool.query(query, [idUloge, korisnickoIme, ime, prezime, email, hashedPassword]);
-         
-               res.status(201).json({message: "Korisnik je uspješno stvoren!", user: rows[0]});
+
+               res.status(201).json({ message: "Korisnik je uspješno stvoren!", user: rows[0] });
             }
          });
       }
@@ -42,5 +43,7 @@ router.post('/addUser', async (req, res) => {
       res.status(500).json({ error: 'Došlo je do greške prilikom izvršavanja upita.' });
    }
 })
+
+
 
 module.exports = router;

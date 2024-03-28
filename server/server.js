@@ -3,6 +3,7 @@ const cors = require('cors');
 const pool = require('./config/db');
 const dataRouter = require('./routes/dataRouter.js');
 const registerRouter = require('./routes/registerRouter.js');
+const loginRouter = require('./routes/loginRouter.js');
 
 const app = express();
 
@@ -17,6 +18,7 @@ app.use('/api', (req, res, next) => {
 
 app.use('/api/data', dataRouter);
 app.use('/api/register', registerRouter);
+app.use('/api/login', loginRouter);
 
 // primjer pisanja upita
 app.get('/query', async (req, res) => {
@@ -36,7 +38,7 @@ app.get('/query', async (req, res) => {
 
 
 
-const PORT = process.env.PORT || 3000;
+const PORT = 8080;
 app.listen(PORT, () => {
    console.log(`Server is running on port ${PORT}`);
 });

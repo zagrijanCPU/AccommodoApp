@@ -1,25 +1,32 @@
-import logo from './logo.svg';
 import './App.css';
+import React, { useEffect } from 'react';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import 'bootstrap/dist/css/bootstrap.min.css';
+
+import Home from './components/Home';
+import Navbar from './components/navbar/Navbar';
+import Login from './components/AccessControl/Login';
+import Register from './components/AccessControl/Register';
+import Logout from './components/AccessControl/Logout';
+
 
 function App() {
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <Router>
+        <Navbar />
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/logout" element={ <Logout/>} />
+        </Routes>
+      </Router>
     </div>
   );
 }
 
+export const baseUrl = "http://localhost:8080";
+export const storedToken = sessionStorage.getItem('token');
 export default App;
