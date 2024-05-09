@@ -4,9 +4,8 @@ const router = express.Router();
 const bcrypt = require('bcrypt');
 
 router.post('/', async (req, res) => {
-   const { idUloge, korisnickoIme, ime, prezime, email, lozinka } = req.body;
-   console.log(req.body);
-
+   const { idUloga, korisnickoIme, ime, prezime, email, lozinka } = req.body;
+   // console.log(req.body);
    try {
 
       const query = `SELECT * 
@@ -24,23 +23,23 @@ router.post('/', async (req, res) => {
                throw new Error("Hashing error");
             }
             else {
-               const query = `INSERT INTO KORISNIK (iduloge, korisnickoIme, ime, prezime, email, lozinka) 
+               const query = `INSERT INTO KORISNIK (iduloga, korisnickoIme, ime, prezime, email, lozinka) 
                               VALUES ($1, $2, $3, $4, $5, $6)
-                              RETURNING idUloge, korisnickoIme, ime, prezime, email`
+                              RETURNING idUloga, korisnickoIme, ime, prezime, email`
 
-               const { rows } = await pool.query(query, [idUloge, korisnickoIme, ime, prezime, email, hashedPassword]);
+               const { rows } = await pool.query(query, [idUloga, korisnickoIme, ime, prezime, email, hashedPassword]);
 
-               res.status(201).json({ message: "Korisnik je uspješno stvoren!", user: rows[0] });
+               res.status(201).json({ message: "User successfully created!", user: rows[0] });
             }
          });
       }
       else {
-         res.status(409).json({ message: "Korisnik već postoji!" });
+         res.status(409).json({ message: "User already exists!" });
       }
 
    } catch (err) {
-      console.error('Greška prilikom izvršavanja upita:', err);
-      res.status(500).json({ error: 'Došlo je do greške prilikom izvršavanja upita.' });
+      console.error('Error while running query:', err);
+      res.status(500).json({ error: 'Error while running query.' });
    }
 })
 

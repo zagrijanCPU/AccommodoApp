@@ -1,29 +1,30 @@
 CREATE TABLE ULOGA
 (
-  idUloge SERIAL NOT NULL,
-  nazUloge VARCHAR(20) NOT NULL,
-  PRIMARY KEY (idUloge)
-  UNIQUE(nazUloge)
+  idUloga SERIAL NOT NULL,
+  nazUloga VARCHAR(20) NOT NULL,
+  PRIMARY KEY (idUloga),
+  UNIQUE(nazUloga)
 );
 
 CREATE TABLE TIP_SMJESTAJA
 (
   idTipSmjestaja SERIAL NOT NULL,
   nazTipaSmjestaja VARCHAR(50) NOT NULL,
-  PRIMARY KEY (idTipSmjestaja)
+  PRIMARY KEY (idTipSmjestaja),
+  UNIQUE(nazTipaSmjestaja)
 );
 
 CREATE TABLE KORISNIK
 (
   idKorisnik SERIAL NOT NULL,
-  idUloge SERIAL NOT NULL,
+  idUloga SERIAL NOT NULL,
   korisnickoIme VARCHAR(50) NOT NULL,
   ime VARCHAR(255),
   prezime VARCHAR(255),
   email VARCHAR(255) NOT NULL,
   lozinka VARCHAR(255) NOT NULL,
   PRIMARY KEY (idKorisnik),
-  FOREIGN KEY (idUloge) REFERENCES ULOGA(idUloge),
+  FOREIGN KEY (idUloga) REFERENCES ULOGA(idUloga),
   UNIQUE (korisnickoIme),
   UNIQUE (email)
 );
@@ -34,30 +35,63 @@ CREATE TABLE SMJESTAJ
   idVlasnik SERIAL NOT NULL,
   idTipSmjestaja SERIAL NOT NULL,
   nazivSmjestaja VARCHAR(255) NOT NULL,
-  grad VARCHAR(100) NOT NULL,
-  cijena FLOAT NOT NULL,
-  kapacitet INT NOT NULL,
-  profilnaSlika BYTEA,
-  adresa VARCHAR(255) NOT NULL,
   drzava VARCHAR(100) NOT NULL,
+  grad VARCHAR(100) NOT NULL,
+  adresa VARCHAR(255) NOT NULL,
   postanskiBroj VARCHAR(20) NOT NULL,
-  geogDuzina FLOAT NOT NULL,
-  geogSirina FLOAT NOT NULL,
+  cijena FLOAT NOT NULL,
+  -- geogDuzina FLOAT,
+  -- geogSirina FLOAT,
+  kapacitet INT NOT NULL,
+  brojParkirnihMjesta INT NOT NULL,
+  profilnaSlika BYTEA,
   PRIMARY KEY (idSmjestaj),
   FOREIGN KEY (idVlasnik) REFERENCES KORISNIK(idKorisnik),
-  FOREIGN KEY (idTipSmjestaja) REFERENCES TIP_SMJESTAJA(idTipSmjestaja),
-  UNIQUE (postanskiBroj)
+  FOREIGN KEY (idTipSmjestaja) REFERENCES TIP_SMJESTAJA(idTipSmjestaja)
 );
 
 CREATE TABLE ZAHTJEV
 (
   idZahtjev SERIAL NOT NULL,
+  idVrstaZahtjeva SERIAL NOT NULL,
   idVlasnik SERIAL NOT NULL,
-  nazivSmjestaja VARCHAR(255) NOT NULL,
-  kategorizacija BYTEA, -- inače obavezno
-  vlasnickiList BYTEA, -- inače obavezno
+  datumSlanjaZahtjeva TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  idSmjestaj INT,
+  idTipSmjestaja INT,
+  nazivSmjestaja VARCHAR(255),
+  drzava VARCHAR(100),
+  grad VARCHAR(100),
+  adresa VARCHAR(255),
+  postanskiBroj VARCHAR(20),
+  cijena FLOAT,
+  kapacitet INT,
+  brojParkirnihMjesta INT,
+  kategorizacija BYTEA,
+  vlasnickiList BYTEA,
+  profilnaSlika BYTEA,
+  naCekanju BOOLEAN DEFAULT true,
+  odobreno BOOLEAN,
+  odgovor TEXT,
   PRIMARY KEY (idZahtjev),
-  FOREIGN KEY (idVlasnik) REFERENCES KORISNIK(idKorisnik)
+  FOREIGN KEY (idVrstaZahtjeva) REFERENCES VRSTA_ZAHTJEVA(idVrstaZahtjeva),
+  FOREIGN KEY (idVlasnik) REFERENCES KORISNIK(idKorisnik),
+  FOREIGN KEY (idTipSmjestaja) REFERENCES TIP_SMJESTAJA(idTipSmjestaja),
+  CONSTRAINT kategorizacija_constraint CHECK (
+      (idvrstazahtjeva = 1 AND kategorizacija IS NOT NULL) OR
+      (idvrstazahtjeva = 2 AND kategorizacija IS NULL)
+  ),
+  CONSTRAINT vlasnickilist_constraint CHECK (
+      (idvrstazahtjeva = 1 AND vlasnickiList IS NOT NULL) OR
+      (idvrstazahtjeva = 2 AND vlasnickiList IS NULL)
+  )
+);
+
+CREATE TABLE VRSTA_ZAHTJEVA
+(
+  idVrstaZahtjeva SERIAL NOT NULL,
+  nazVrsteZahtjeva VARCHAR(50) NOT NULL,
+  PRIMARY KEY (idVrstaZahtjeva),
+  UNIQUE (nazVrsteZahtjeva)
 );
 
 CREATE TABLE REZERVACIJA
@@ -69,14 +103,13 @@ CREATE TABLE REZERVACIJA
   datOdlaska DATE NOT NULL,
   datRezervacije DATE NOT NULL,
   brojGostiju INT NOT NULL,
-  dolazakAutom BOOLEAN NOT NULL,
   placeno BOOLEAN NOT NULL,
   otkazano BOOLEAN NOT NULL,
-  zavrseno BOOLEAN NOT NULL,
   PRIMARY KEY (idRezervacija),
   FOREIGN KEY (idGost) REFERENCES KORISNIK(idKorisnik),
   FOREIGN KEY (idSmjestaj) REFERENCES SMJESTAJ(idSmjestaj),
-  UNIQUE (idGost, idSmjestaj)
+  UNIQUE (idGost, idSmjestaj, datDolaska, datOdlaska)
+  -- CONSTRAINT datumi_check CHECK (datdolaska >= CURRENT_DATE AND datdolaska < datodlaska)
 );
 
 CREATE TABLE RECENZIJA

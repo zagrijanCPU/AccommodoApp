@@ -1,0 +1,4 @@
+admin Password#123
+fm Password
+kp Password
+gost1 Password

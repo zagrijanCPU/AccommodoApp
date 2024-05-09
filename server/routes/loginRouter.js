@@ -8,14 +8,14 @@ router.post('/', async (req, res) => {
    const { korisnickoIme, lozinka } = req.body;
    console.log(korisnickoIme, lozinka);
    try {
-      const query = `SELECT *
-                     FROM KORISNIK
+      const query = `SELECT idkorisnik, korisnickoime, lozinka, nazuloga
+                     FROM KORISNIK JOIN ULOGA USING(iduloga)
                      WHERE korisnickoIme = $1`;
       
       const { rows } = await pool.query(query, [korisnickoIme]);
 
       const user = rows[0];
-      console.log(user);
+      // console.log(user);
 
       if (user) {
          bcrypt.compare(lozinka, user.lozinka, (err, result) => {
@@ -25,15 +25,15 @@ router.post('/', async (req, res) => {
             } else {
                if (result) {
                   const token = jwt.sign({
-                     idKorisnik: user.idKorisnik,
-                     korisnickoIme: user.korisnickoIme,
+                     idkorisnik: user.idkorisnik,
+                     korisnickoime: user.korisnickoime,
+                     nazuloga: user.nazuloga
                   },
                      'tajna_lozinka')
                   // { expiresIn: '1h' }};
-   
-                  res.status(200).send(token);
+                  res.status(200).json({token: token, role: user.nazuloga});
                } else {
-                  res.status(401).json({ message: "Incorrect password for this username!" });
+                  res.status(401).json({ message: "Incorrect username or password!" });
                }
             }
          })

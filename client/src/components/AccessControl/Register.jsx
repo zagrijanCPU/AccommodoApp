@@ -8,12 +8,13 @@ function Register() {
    }
 
    const [formData, setFormData] = useState({
-      idUloge: 0,
+      idUloga: 0,
       korisnickoIme: "",
       ime: "",
       prezime: "",
       email: "",
       lozinka: "",
+      ponovljenaLozinka: ""
    });
    const [rolesArray, setRolesArray] = useState([]);
    const [redirectToLogin, setRedirectToLogin] = useState(false);
@@ -50,12 +51,13 @@ function Register() {
 
    const validation = () => {
       if (
-         formData.idUloge == 0 ||
+         formData.idUloga == 0 ||
          formData.ime == "" ||
          formData.prezime == "" ||
          formData.korisnickoIme == "" ||
          formData.email == "" ||
-         formData.lozinka == ""
+         formData.lozinka == "" ||
+         formData.ponovljenaLozinka == ""
       ) {
          setErrorMessage(true, "All fields required!");
          return false;
@@ -71,8 +73,28 @@ function Register() {
          setErrorMessage(true, "Password length min. 8 characters!");
          return false;
       }
+
       return true;
    };
+
+   const checkEmailFormat = (event) => {
+      const regex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+      if (!regex.test(event.target.value)) {
+         document.getElementById('email').style.border = "1px solid red";
+      }
+      else {
+         document.getElementById('email').style.border = "1px solid green";
+      }
+   }
+
+   const checkRepeatedPassword = (event) => {
+      if (formData.lozinka != event.target.value) {
+         document.getElementById('ponovljenaLozinka').style.border = "1px solid red";
+      }
+      else {
+         document.getElementById('ponovljenaLozinka').style.border = "1px solid green";
+      }
+   }
 
    const userExists = async (userName, email) => {
       const data = { korisnickoIme: userName, email: email };
@@ -156,16 +178,16 @@ function Register() {
                                     name="uloga"
                                     id="uloga"
                                     className="form-control"
-                                    value={formData.idUloge}
+                                    value={formData.idUloga}
                                     onChange={(e) => {
-                                       setFormData({ ...formData, idUloge: e.target.value });
+                                       setFormData({ ...formData, idUloga: e.target.value });
                                        setErrorMessage(false);
                                     }}
                                  >
                                     <option value="">--</option>
                                     {rolesArray.map((element) => (
-                                       <option key={element.iduloge} value={element.iduloge}>
-                                          {element.nazuloge}
+                                       <option key={element.iduloga} value={element.iduloga}>
+                                          {element.nazuloga}
                                        </option>
                                     ))}
                                  </select>
@@ -222,6 +244,7 @@ function Register() {
                                     onChange={(e) => {
                                        setFormData({ ...formData, email: e.target.value });
                                        setErrorMessage(false);
+                                       checkEmailFormat(e);
                                     }}
                                  />
                               </div>
@@ -235,6 +258,20 @@ function Register() {
                                     onChange={(e) => {
                                        setFormData({ ...formData, lozinka: e.target.value });
                                        setErrorMessage(false);
+                                       document.getElementById('ponovljenaLozinka').style.border = "1px solid red";
+                                    }}
+                                 />
+                              </div>
+                              <div className="form-group" style={formGroupStyle}>
+                                 <label htmlFor="lozinka">Repeat password</label>
+                                 <input
+                                    type="password"
+                                    className="form-control"
+                                    id="ponovljenaLozinka"
+                                    value={formData.ponovljenaLozinka}
+                                    onChange={(e) => {
+                                       setFormData({ ...formData, ponovljenaLozinka: e.target.value });
+                                       checkRepeatedPassword(e);
                                     }}
                                  />
                               </div>

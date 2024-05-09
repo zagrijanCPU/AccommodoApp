@@ -1,7 +1,11 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { baseUrl } from "../App";
 
 function Home() {
-   return <div>Home page</div>;
+
+   return (
+      <></>
+   );
 }
 
 export default Home;

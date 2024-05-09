@@ -1,0 +1,33 @@
+/* Stilizacija paginacije */
+.pagination {
+   display: flex;
+   list-style: none;
+   padding: 0;
+   justify-content: center;
+   align-items: center;
+}
+
+.pagination li {
+   margin: 0 5px;
+   cursor: pointer;
+}
+
+.pagination li.active a {
+   color: #fff;
+   background-color: #007bff;
+   border-color: #007bff;
+   padding: 6px 12px;
+   border-radius: 3px;
+}
+
+.pagination li a {
+   color: #007bff;
+   text-decoration: none;
+   padding: 6px 12px;
+   border: 1px solid #007bff;
+   border-radius: 3px;
+}
+
+.pagination li a:hover {
+   background-color: #f2f2f2;
+}

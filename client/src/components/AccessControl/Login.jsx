@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { baseUrl } from "../../App";
+import { baseUrl, storedToken } from "../../App";
 import { Modal, Button } from "react-bootstrap";
 
 function Login() {
@@ -54,9 +54,10 @@ function Login() {
          })
    
          if (response.ok) {
-            const data = await response.text();
-            // console.log(data);
-            sessionStorage.setItem("token", data);
+            const data = await response.json();
+            console.log(data);
+            sessionStorage.setItem("token", data.token);
+            sessionStorage.setItem("role", data.role);
             navigate("/");
             window.location.reload();
          }
