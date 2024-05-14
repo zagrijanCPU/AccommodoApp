@@ -21,7 +21,6 @@ function Navbar() {
             {(storedToken && role === "admin") && <Navitem path="/allAccommodations" text="All Accommodations" />}
             {(storedToken && role === "admin") && <Navitem path="/allRequests" text="All Requests" />}
             {(storedToken && role === "vlasnik") && <Navitem path="/myRequests" text="My Requests" />}
-            {/* {storedToken && (role === "admin" ||role === "vlasnik") && <Navitem path="/allRequests" text={role === "admin" ? "All Requests" : "My Requests"} />} */}
             {!storedToken && <Navitem path="/login" text="Login" />}
             {!storedToken && <Navitem path="/register" text="Register" />}
             {storedToken && <Navitem path="/logout" text="Logout" />}

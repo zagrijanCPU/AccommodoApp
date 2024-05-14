@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { baseUrl, getImageSource, role, storedToken } from "../../App";
 import { Modal } from "react-bootstrap";
 import { format } from 'date-fns';
+import { getUserId } from "../Functions";
 
 const ChangeData = (props) => {
    const requestTypeId = props.requestTypeId;
@@ -37,8 +38,8 @@ const ChangeData = (props) => {
    });
 
    const getAccommodations = async () => {
-      try {
-         if (storedToken) {
+      if (storedToken) {
+         try {
             const response = await fetch(`${baseUrl}/api/data/getAccommodations?page=${currentPage + 1}&pageSize=${pageSize}`, {
                method: "POST",
                headers: {
@@ -54,36 +55,26 @@ const ChangeData = (props) => {
                setAccommodations(data.accommodations);
                setPageCount(Math.ceil(data.totalCount / pageSize));
             }
+         } catch (error) {
+            console.log("Error: ", error);
          }
-      } catch (error) {
-         console.log("Error: ", error);
-      }
-      finally {
-         setLoading(false);
+         finally {
+            setLoading(false);
+         }
       }
    }
 
-   const getUserId = async () => {
-      if (storedToken) {
-         const response = await fetch(`${baseUrl}/api/data/getUserId`, {
-            method: "GET",
-            headers: {
-               "Content-Type": "application/json",
-               "Authorization": storedToken
-            }
-         })
+   const getData = async () => {
+      getAccommodations();
 
-         if (response.ok) {
-            const data = await response.json();
-            // console.log(data);
-            setUserId(data.toString());
-         }
+      var data = await getUserId();
+      if (data) {
+         setUserId(data.toString())
       }
    }
 
    useEffect(() => {
-      getAccommodations();
-      getUserId();
+      getData();
    }, []);
 
    const setErrorMessage = (error, message) => {
@@ -142,7 +133,7 @@ const ChangeData = (props) => {
       if (!validation()) {
          return;
       }
-      
+
       const formData = new FormData();
       formData.append('idVrstaZahtjeva', requestTypeId);
       formData.append('idVlasnik', userId);
@@ -156,7 +147,7 @@ const ChangeData = (props) => {
       formData.append('cijena', accommodation.cijena);
       formData.append('kapacitet', accommodation.kapacitet);
       formData.append('brojParkirnihMjesta', accommodation.brojparkirnihmjesta);
-      
+
       // Ovo samo služi ako nisam birao neku sliku kao File, nego šaljem staru sliku (moram poslati cijeli Buffer)
       if (accommodation.profilnaslika.type == "Buffer") {
          formData.append('profilnaSlika', new Blob([new Uint8Array(accommodation.profilnaslika.data)]));
@@ -170,7 +161,7 @@ const ChangeData = (props) => {
             method: 'POST',
             body: formData
          });
-         
+
          if (response.ok) {
             console.log("ovdje");
             setShowSuccessModal(true);
@@ -200,6 +191,7 @@ const ChangeData = (props) => {
                ))
             }
          </div>
+
          <Modal show={showEditModal} onHide={() => setShowEditModal(false)}>
             <Modal.Header closeButton>
                <Modal.Title>Edit Accommodation Data</Modal.Title>

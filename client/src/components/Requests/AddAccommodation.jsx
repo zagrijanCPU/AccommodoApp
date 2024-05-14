@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { baseUrl, storedToken } from '../../App';
 import { Modal } from 'react-bootstrap';
+import { getAccommodationTypes, getUserId, setErrorMessage } from '../Functions';
 
 const AddAccommodation = (props) => {
 
@@ -26,54 +27,21 @@ const AddAccommodation = (props) => {
    const [profilePicture, setProfilePicture] = useState("");
    const [showSuccessModal, setShowSuccessModal] = useState(false);
 
-   const getAccommodationTypes = async () => {
-      const response = await fetch(`${baseUrl}/api/data/accommodationTypes`, {
-         method: "GET",
-         headers: {
-            "Content-Type": "application/json",
-            // "Authorization": storedToken
-         }
-      })
-
-      if (response.ok) {
-         const data = await response.json();
+   const getData = async () => {
+      var data = await getAccommodationTypes();
+      if (data) {
          setAccommodationTypesArray(data);
       }
-   };
 
-   const getUserId = async () => {
-      if (storedToken) {
-         const response = await fetch(`${baseUrl}/api/data/getUserId`, {
-            method: "GET",
-            headers: {
-               "Content-Type": "application/json",
-               "Authorization": storedToken
-            }
-         })
-
-         if (response.ok) {
-            const data = await response.json();
-            // console.log(data);
-            setUserId(data.toString());
-         }
+      data = await getUserId();
+      if (data) {
+         setUserId(data.toString());
       }
    }
 
    useEffect(() => {
-      getAccommodationTypes();
-      getUserId();
+      getData();
    }, [])
-
-   const setErrorMessage = (error, message) => {
-      if (error) {
-         var errorMessage = document.querySelector(".error-message");
-         errorMessage.innerHTML = message;
-         errorMessage.style.color = "red";
-      } else {
-         var errorMessage = document.querySelector(".error-message");
-         errorMessage.innerHTML = "";
-      }
-   };
 
    const validation = () => {
       if (accommodationTypeId == 0 ||

@@ -13,9 +13,12 @@ import SendRequest from './components/Requests/SendRequest';
 import ShowRequest from './components/Requests/ShowRequest';
 import ShowAccommodations from './components/Accommodations/ShowAccommodations';
 import ShowAccommodation from './components/Accommodations/ShowAccommodation';
+import SearchResult from './components/SearchResult';
+import ViewReservations from './components/Reservations/ViewReservations';
 
 
 function App() {
+
 
   return (
     <div className="App">
@@ -33,6 +36,8 @@ function App() {
           <Route path="/myAccommodations" element={<ShowAccommodations />} />
           <Route path="/allAccommodations" element={<ShowAccommodations />} />
           <Route path="/accommodation/:id" element={<ShowAccommodation />} />
+          <Route path="/searchResult" element={<SearchResult />} />
+          <Route path="/myReservations" element={<ViewReservations />} />
         </Routes>
       </Router>
     </div>
@@ -58,7 +63,7 @@ export const getPdfSource = (pdfData) => {
   return pdfUrl;
 };
 
-export const itemsType = ["requests", "accommodations"];
+export const itemsType = ["requests", "accommodations", "reservations"];
 
 export default App;
 

@@ -101,7 +101,7 @@ CREATE TABLE REZERVACIJA
   idSmjestaj SERIAL NOT NULL,
   datDolaska DATE NOT NULL,
   datOdlaska DATE NOT NULL,
-  datRezervacije DATE NOT NULL,
+  datRezervacije TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   brojGostiju INT NOT NULL,
   placeno BOOLEAN NOT NULL,
   otkazano BOOLEAN NOT NULL,
@@ -109,7 +109,7 @@ CREATE TABLE REZERVACIJA
   FOREIGN KEY (idGost) REFERENCES KORISNIK(idKorisnik),
   FOREIGN KEY (idSmjestaj) REFERENCES SMJESTAJ(idSmjestaj),
   UNIQUE (idGost, idSmjestaj, datDolaska, datOdlaska)
-  -- CONSTRAINT datumi_check CHECK (datdolaska >= CURRENT_DATE AND datdolaska < datodlaska)
+  CONSTRAINT datumi_check CHECK (datdolaska >= CURRENT_DATE AND datdolaska < datodlaska)
 );
 
 CREATE TABLE RECENZIJA

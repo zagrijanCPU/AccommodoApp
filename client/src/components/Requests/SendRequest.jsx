@@ -2,33 +2,21 @@ import React, { useEffect, useState } from "react";
 import { baseUrl, storedToken } from "../../App";
 import AddAccommodation from "./AddAccommodation";
 import ChangeData from "./ChangeData";
+import { getRequestTypes } from "../Functions";
 
 const SendRequest = () => {
 
    const [requestTypes, setRequestTypes] = useState([]);
 
-   const getRequestTypes = async () => {
-      try {
-         const response = await fetch(`${baseUrl}/api/data/requestTypes`, {
-            method: "GET",
-            headers: {
-               "Content-Type": "application/json",
-               "Authorization": storedToken
-            }
-         })
-
-         if (response.ok) {
-            const data = await response.json();
-            setRequestTypes(data);
-            // console.log(data);
-         }
-      } catch (error) {
-         console.log("Error: ", error);
+   const getData = async () => {
+      var data = await getRequestTypes();
+      if (data) {
+         setRequestTypes(data);
       }
    }
 
    useEffect(() => {
-      getRequestTypes();
+      getData();
    }, []);
 
    return (

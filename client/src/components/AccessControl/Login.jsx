@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { baseUrl, storedToken } from "../../App";
 import { Modal, Button } from "react-bootstrap";
+import { login, setErrorMessage } from "../Functions";
 
 function Login() {
 
@@ -14,18 +15,6 @@ function Login() {
       lozinka: ""
    });
    const navigate = useNavigate();
-   
-   const setErrorMessage = (error, message) => {
-      if (error) {
-         var errorMessage = document.querySelector(".error-message");
-         errorMessage.innerHTML = message;
-         errorMessage.style.color = "red";
-      } else {
-         var errorMessage = document.querySelector(".error-message");
-         errorMessage.innerHTML = "";
-      }
-   };
-
    const validation = () => {
       if (
          formData.korisnickoIme == "" ||
@@ -44,29 +33,9 @@ function Login() {
          return
       }
 
-      try {
-         const response = await fetch(`${baseUrl}/api/login`, {
-            method: "POST",
-            headers: {
-               "Content-Type": "application/json",
-            },
-            body: JSON.stringify(formData),
-         })
-   
-         if (response.ok) {
-            const data = await response.json();
-            console.log(data);
-            sessionStorage.setItem("token", data.token);
-            sessionStorage.setItem("role", data.role);
-            navigate("/");
-            window.location.reload();
-         }
-         else {
-            const message = await response.json();
-            setErrorMessage(true, message.message);
-         }
-      } catch (error) {
-         console.log("Error: ", error);
+      if (await login(formData)) {
+         navigate("/");
+         window.location.reload();
       }
    }
 

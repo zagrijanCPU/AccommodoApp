@@ -127,23 +127,42 @@ const ShowRequest = () => {
             <Loading />
             :
             <div className="container">
-               {role === "admin" && <a href="/allRequests" className="btn btn-primary">Back</a>}
+               {role === "admin" && <a href="/allRequests" className="btn btn-primary" style={{marginTop: "30px", marginBottom: "30px"}}>Back</a>}
                {role === "vlasnik" && <a href="/myRequests" className="btn btn-primary">Back</a>}
                <div className="card">
-                  <img className="card-img-top" src={getImageSource(request.profilnaslika)} alt="Card image" style={{ width: "100%" }} />
+                  <img className="card-img-top" src={getImageSource(request.profilnaslika)} alt="Card image" style={{ width: "300px"}} />
                   <div className="card-body">
                      <h4 className="card-title">{request.nazivsmjestaja}</h4>
                      <p className="card-text">Accommodation Type: {request.naztipasmjestaja}</p>
+                     <p className="card-text">Request Type: { request.nazvrstezahtjeva}</p>
                      {request.nacekanju && <p className="card-text" style={{ color: "goldenrod" }}>Pending...</p>}
                      {!request.nacekanju && request.odobreno && <p className="card-text" style={{ color: "green" }}>Approved</p>}
                      {!request.nacekanju && !request.odobreno && <p className="card-text" style={{ color: "red" }}>Discarded</p>}
                      {
                         request.kategorizacija &&
                            <p className="card-text">
-                              <embed src={getPdfSource(request.kategorizacija)} type="application/pdf" width="100%" height="600px" />
+                              <embed src={getPdfSource(request.kategorizacija)} type="application/pdf" width="40%" height="600px" />
                            </p>
                      }
-                     <p className="card-text">Sent: {formatDate(request.datumslanjazahtjeva)}</p>
+                     {
+                        request.vlasnickilist &&
+                           <p className="card-text">
+                              <embed src={getPdfSource(request.vlasnickilist)} type="application/pdf" width="40%" height="600px" />
+                           </p>
+                     }
+                     {request.odgovor && 
+                        <textarea
+                           name="odgovor"
+                           id="odgovor"
+                           className="form-control"
+                           rows={10}
+                           cols={50}
+                           disabled
+                           value={request.odgovor}
+                           style={{ resize: "none" }}
+                     />
+                     }
+                     <p className="card-text">Request sent: {formatDate(request.datumslanjazahtjeva)}</p>
                   </div>
                   {
                      role === "admin" && request.nacekanju ? 

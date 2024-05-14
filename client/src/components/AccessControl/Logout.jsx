@@ -6,6 +6,7 @@ function Logout() {
 
    useEffect(() => {
       sessionStorage.removeItem("token");
+      sessionStorage.removeItem("role");
       navigate("/");
       window.location.reload();
    }, [])

@@ -31,24 +31,28 @@ const TableView = (props) => {
                <tr>
                   {type === itemsType[0] && <th>Claim ID</th>}
                   {type === itemsType[1] && <th>Accommodation ID</th>}
+                  {type === itemsType[2] && <th>Reservation ID</th>}
                   {type === itemsType[0] && <th>Request Type</th>}
-                  <th>Owner name</th>
+                  {type !== itemsType[2] && <th>Owner name</th>}
+                  {type === itemsType[2] && <th>Time of stay</th>}
                   <th>Accommodation Name</th>
                   <th>Accommodation Type</th>
-                  {type === itemsType[1] && <th>Location</th>}
+                  {(type === itemsType[1] || type === itemsType[2]) && <th>Location</th>}
                   <th></th>
                </tr>
             </thead>
             <tbody>
                {items.map(item => (
-                  <tr key={type === itemsType[0] ? item.idzahtjev : type === itemsType[1] ? item.idsmjestaj : ""} className='claim-row'>
+                  <tr key={type === itemsType[0] ? item.idzahtjev : type === itemsType[1] ? item.idsmjestaj : item.idrezervacija} className='claim-row'>
                      {type === itemsType[0] && <td>{item.idzahtjev}</td>}
                      {type === itemsType[1] && <td>{item.idsmjestaj}</td>}
+                     {type === itemsType[2] && <td>{ item.idrezervacija}</td>}
                      {type === itemsType[0] && <td>{item.nazvrstezahtjeva}</td>}
-                     <td>{item.nazkorisnik}</td>
+                     {type !== itemsType[2] && <td>{item.nazkorisnik}</td>}
+                     {type === itemsType[2] && <td>{ `${item.datdolaska.split("T")[0].split("-").reverse().join("-")} - ${item.datodlaska.split("T")[0].split("-").reverse().join("-")}` }</td>}
                      <td>{item.nazivsmjestaja}</td>
                      <td>{item.naztipasmjestaja}</td>
-                     {type === itemsType[1] && <td>{item.lokacija}</td>}
+                     {(type === itemsType[1] || type === itemsType[2]) && <td>{item.lokacija}</td>}
                      {
                         type === itemsType[0] && 
                         <td>

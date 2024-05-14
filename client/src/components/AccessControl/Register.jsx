@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { baseUrl } from "../../App";
 import { Modal, Button } from "react-bootstrap";
+import { setErrorMessage, uloge, userExists } from "../Functions";
 function Register() {
 
    const formGroupStyle = {
@@ -20,34 +21,13 @@ function Register() {
    const [redirectToLogin, setRedirectToLogin] = useState(false);
    const [showSuccessModal, setShowSuccessModal] = useState(false);
 
-   const uloge = async () => {
-      const response = await fetch(`${baseUrl}/api/data/uloge`, {
-         method: "GET",
-         headers: {
-            "Content-Type": "application/json",
-         },
-      });
-
-      if (response.ok) {
-         const data = await response.json();
-         setRolesArray(data);
-      }
-   };
+   const setRoles = async () => {
+      setRolesArray(await uloge());
+   }
 
    useEffect(() => {
-      uloge();
+      setRoles();
    }, []);
-
-   const setErrorMessage = (error, message) => {
-      if (error) {
-         var errorMessage = document.querySelector(".error-message");
-         errorMessage.innerHTML = message;
-         errorMessage.style.color = "red";
-      } else {
-         var errorMessage = document.querySelector(".error-message");
-         errorMessage.innerHTML = "";
-      }
-   };
 
    const validation = () => {
       if (
@@ -95,25 +75,6 @@ function Register() {
          document.getElementById('ponovljenaLozinka').style.border = "1px solid green";
       }
    }
-
-   const userExists = async (userName, email) => {
-      const data = { korisnickoIme: userName, email: email };
-      console.log(data);
-      const response = await fetch(`${baseUrl}/api/data/checkUser`, {
-         method: "POST",
-         headers: {
-            "Content-Type": "application/json",
-         },
-         body: JSON.stringify(data),
-      });
-
-      console.log(response);
-      if (response.ok) {
-         return true;
-      } else {
-         return false;
-      }
-   };
 
    const handleSubmit = async (event) => {
       event.preventDefault();
