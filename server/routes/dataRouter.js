@@ -6,18 +6,49 @@ const multer = require('multer');
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
-router.get('/', async (req, res) => {
+router.get('/getAllOwners', async (req, res) => {
    try {
-      const query = 'SELECT * FROM korisnik';
+      const query = `SELECT idkorisnik, nazuloga, ime, prezime, korisnickoime, email 
+                     FROM KORISNIK JOIN ULOGA USING(iduloga)
+                     WHERE nazuloga = 'owner'`;
 
       const { rows } = await pool.query(query);
-
-      res.json(rows);
+      res.status(200).json(rows);
    } catch (err) {
       console.error('Greška prilikom izvršavanja upita:', err);
       res.status(500).json({ error: 'Došlo je do greške prilikom izvršavanja upita.' });
    }
 })
+
+router.get('/getAllGuests', async (req, res) => {
+   try {
+      const query = `SELECT idkorisnik, nazuloga, ime, prezime, korisnickoime, email 
+                     FROM KORISNIK JOIN ULOGA USING(iduloga)
+                     WHERE nazuloga = 'guest'`;
+
+      const { rows } = await pool.query(query);
+      res.status(200).json(rows);
+   } catch (err) {
+      console.error('Greška prilikom izvršavanja upita:', err);
+      res.status(500).json({ error: 'Došlo je do greške prilikom izvršavanja upita.' });
+   }
+})
+
+router.get("/deleteUser", verifyToken, async (req, res) => {
+   if (req.user.nazuloga === "admin") {
+      try {
+         const query = `DELETE 
+                        FROM KORISNIK
+                        WHERE idkorisnik = $1`;
+         
+         await pool.query(query, [req.query.id]);
+         res.status(200).json({ message: "ok" });
+      } catch (err) {
+         console.error('Greška prilikom izvršavanja upita:', err);
+         res.status(500).json({ error: 'Došlo je do greške prilikom izvršavanja upita.' });
+      }
+   }
+});
 
 // uloge: returns all types of roles
 router.get('/uloge', async (req, res) => {
@@ -27,6 +58,11 @@ router.get('/uloge', async (req, res) => {
                      WHERE nazuloga != $1`;
 
       const { rows } = await pool.query(query, ['admin']);
+
+      // const query = `SELECT *
+      //                FROM ULOGA`;
+      
+      // const { rows } = await pool.query(query);
 
       res.status(200).json(rows);
    } catch (error) {
@@ -51,7 +87,7 @@ router.get('/accommodationTypes', async (req, res) => {
 
 router.get('/getAccommodation', async (req, res) => {
    try {
-      const query = `SELECT idsmjestaj, idtipsmjestaja, naztipasmjestaja, nazivsmjestaja, drzava, grad, adresa,
+      const query = `SELECT idsmjestaj, idvlasnik, idtipsmjestaja, naztipasmjestaja, nazivsmjestaja, drzava, grad, adresa,
                            postanskibroj, cijena, kapacitet, brojparkirnihmjesta, profilnaslika
                         FROM SMJESTAJ JOIN TIP_SMJESTAJA USING(idtipsmjestaja)
                         WHERE idsmjestaj = $1`;
@@ -83,7 +119,7 @@ router.post('/getAccommodations', verifyToken, async (req, res) => {
          res.status(500).json({ error: 'Došlo je do greške prilikom izvršavanja upita.' });
       }
    }
-   else if (req.body.role === "vlasnik") {
+   else if (req.body.role === "owner") {
       try {
          const userId = req.user.idkorisnik;
          const query = `SELECT idsmjestaj, ime || ' ' || prezime as nazkorisnik, naztipasmjestaja, nazivsmjestaja, drzava || ' (' || postanskibroj || ' ' || adresa || ', ' || grad || ')' as lokacija, profilnaslika
@@ -117,9 +153,24 @@ router.get('/allAccommodations', async (req, res) => {
       res.status(200).json(rows);
    } catch (error) {
       console.error('Greška prilikom izvršavanja upita:', error);
-         res.status(500).json({ error: 'Došlo je do greške prilikom izvršavanja upita.' });
+      res.status(500).json({ error: 'Došlo je do greške prilikom izvršavanja upita.' });
    }
 });
+
+router.get("/deleteAccommodation", verifyToken, async (req, res) => {
+   if (req.user.nazuloga === "admin") {
+      try {
+         const query = `DELETE FROM SMJESTAJ
+                        WHERE idsmjestaj = $1`;
+         
+         await pool.query(query, [req.query.id]);
+         res.status(200).json({ message: "ok" });
+      } catch (error) {
+         console.error('Greška prilikom izvršavanja upita:', error);
+         res.status(500).json({ error: 'Došlo je do greške prilikom izvršavanja upita.' });
+      }
+   }
+})
 
 // getRole: requires token as Authorization and returns role of user
 router.get('/getRole', verifyToken, async (req, res) => {
@@ -177,7 +228,7 @@ router.post('/checkUser', async (req, res) => {
    }
 })
 
-// addAccommodationRequest:
+// addAccommodationRequest: 
 router.post('/addAccommodationRequest', upload.fields([
    { name: 'profilnaSlika', maxCount: 1 },
    { name: 'kategorizacija', maxCount: 1 },
@@ -189,9 +240,24 @@ router.post('/addAccommodationRequest', upload.fields([
       const kategorizacija = req.files['kategorizacija'][0].buffer;
       const vlasnickiList = req.files['vlasnickiList'][0].buffer;
 
-      const query = `INSERT INTO ZAHTJEV (idvrstazahtjeva, idvlasnik, idtipsmjestaja, nazivsmjestaja, drzava, grad, adresa, postanskibroj, cijena, kapacitet, brojparkirnihmjesta, profilnaslika, kategorizacija, vlasnickilist)
+      const query = `INSERT INTO ZAHTJEV (idvrstazahtjeva, idvlasnik, idtipsmjestaja, nazivsmjestaja, drzava, grad, adresa, 
+                                          postanskibroj, cijena, kapacitet, brojparkirnihmjesta, profilnaslika, kategorizacija, vlasnickilist)
                      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)`;
-      const { rows } = await pool.query(query, [idVrstaZahtjeva, idVlasnik, idTipSmjestaja, nazivSmjestaja, drzava, grad, adresa, postanskiBroj, cijena, kapacitet, brojParkirnihMjesta, profilnaSlika, kategorizacija, vlasnickiList]);
+      await pool.query(query, [
+         idVrstaZahtjeva,
+         idVlasnik,
+         idTipSmjestaja,
+         nazivSmjestaja,
+         drzava,
+         grad,
+         adresa,
+         postanskiBroj,
+         cijena,
+         kapacitet,
+         brojParkirnihMjesta,
+         profilnaSlika,
+         kategorizacija,
+         vlasnickiList]);
       res.status(200).json({ message: "ok" });
    } catch (error) {
       console.error('Greška prilikom izvršavanja upita:', error);
@@ -202,8 +268,6 @@ router.post('/addAccommodationRequest', upload.fields([
 router.post('/changeDataRequest', upload.single('profilnaSlika'), async (req, res) => {
    try {
       const { idVrstaZahtjeva, idVlasnik, idSmjestaj, idTipSmjestaja, nazivSmjestaja, drzava, grad, adresa, postanskiBroj, cijena, kapacitet, brojParkirnihMjesta } = req.body;
-      // const profilnaSlika = req.file.buffer;
-      // console.log(req.file);
       var profilnaSlika = req.file.buffer;
 
       const query = `INSERT INTO ZAHTJEV (idvrstazahtjeva, idvlasnik, idsmjestaj, idtipsmjestaja, nazivsmjestaja, drzava, grad, adresa, postanskibroj, cijena, kapacitet, brojparkirnihmjesta, profilnaslika)
@@ -257,7 +321,7 @@ router.post('/getPendingRequests', verifyToken, async (req, res) => {
          res.status(500).json({ message: 'Failed to get requests' });
       }
    }
-   else if (req.body.role === "vlasnik") {
+   else if (req.body.role === "owner") {
       console.log("ovdje");
       try {
          const query = `SELECT idzahtjev, nazvrstezahtjeva, ime || ' ' || prezime as nazkorisnik, naztipasmjestaja, nazivsmjestaja
@@ -315,7 +379,7 @@ router.post('/getApprovedRequests', verifyToken, async (req, res) => {
       }
    }
    // For owner
-   else if (req.body.role === "vlasnik") {
+   else if (req.body.role === "owner") {
       try {
          const query = `SELECT idzahtjev, nazvrstezahtjeva, ime || ' ' || prezime as nazkorisnik, naztipasmjestaja, nazivsmjestaja
                         FROM ZAHTJEV
@@ -367,7 +431,7 @@ router.post('/getDiscardedRequests', verifyToken, async (req, res) => {
          res.status(500).json({ message: 'Failed to get requests' });
       }
    }
-   else if (req.body.role === "vlasnik") {
+   else if (req.body.role === "owner") {
       try {
          const query = `SELECT idzahtjev, nazvrstezahtjeva, ime || ' ' || prezime as nazkorisnik, naztipasmjestaja, nazivsmjestaja
                         FROM ZAHTJEV
@@ -398,7 +462,7 @@ router.post('/getDiscardedRequests', verifyToken, async (req, res) => {
 // /getRequest: requires token as Authorization, returns claim
 router.post('/getRequest', verifyToken, async (req, res) => {
    try {
-      const query = `SELECT idzahtjev, datumslanjazahtjeva, nazvrstezahtjeva, naztipasmjestaja, nazivsmjestaja, 
+      const query = `SELECT idzahtjev, idvlasnik, datumslanjazahtjeva, nazvrstezahtjeva, naztipasmjestaja, nazivsmjestaja, 
                            drzava, grad, adresa, postanskibroj, cijena, kapacitet, brojparkirnihmjesta,
                            kategorizacija, vlasnickilist, profilnaslika, nacekanju, odobreno, odgovor
                      FROM ZAHTJEV JOIN TIP_SMJESTAJA USING(idtipsmjestaja)
@@ -427,7 +491,7 @@ router.post('/approveRequest', verifyToken, async (req, res) => {
          const newAccommodation = rows[0];
          console.log(rows[0]);
    
-         // Dodati zahtjev u smjestaj
+         // Dodati zahtjev u smještaj
          const query2 = `INSERT INTO SMJESTAJ (idvlasnik, idtipsmjestaja, nazivsmjestaja, drzava, grad, adresa, postanskibroj, cijena, kapacitet, brojparkirnihmjesta, profilnaslika)
                         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`;
    
@@ -540,14 +604,15 @@ router.get('/setPending', verifyToken, async (req, res) => {
 
 
 // myReservations: requires token for Authorization, returns reservations for given userId
-router.post('/getReservations', verifyToken, async (req, res) => {
-   if (req.body.role === "gost") {
+router.get('/allReservations', verifyToken, async (req, res) => {
+   if (req.user.nazuloga === "guest") {
       try {
          const userId = req.user.idkorisnik;
-         const query = `SELECT idrezervacija, datrezervacije, nazivsmjestaja, naztipasmjestaja, drzava || ' (' || postanskibroj || ' ' || adresa || ', ' || grad || ')' as lokacija, brojgostiju, datdolaska, datodlaska, placeno, otkazano
+         const query = `SELECT idsmjestaj, idrezervacija, datrezervacije, nazivsmjestaja, naztipasmjestaja, drzava || ' (' || postanskibroj || ' ' || adresa || ', ' || grad || ')' as lokacija, brojgostiju, datdolaska, datodlaska, placeno, otkazano
                         FROM REZERVACIJA JOIN SMJESTAJ USING(idsmjestaj)
                         JOIN TIP_SMJESTAJA USING(idtipsmjestaja)
-                        WHERE idgost = $1
+                        WHERE idgost = $1 AND otkazano = false
+                        AND datodlaska > CURRENT_DATE
                         ORDER BY datrezervacije desc
                         LIMIT $2
                         OFFSET $3`;
@@ -565,10 +630,182 @@ router.post('/getReservations', verifyToken, async (req, res) => {
          res.status(500).json({ message: 'Failed to get reservations' });
       }
    }
+   else if (req.user.nazuloga === "owner") {
+      try {
+         const userId = req.user.idkorisnik;
+         const query = `SELECT idsmjestaj, idrezervacija, datrezervacije, nazivsmjestaja, naztipasmjestaja, drzava || ' (' || postanskibroj || ' ' || adresa || ', ' || grad || ')' as lokacija, brojgostiju, datdolaska, datodlaska, placeno, otkazano
+                        FROM REZERVACIJA JOIN SMJESTAJ USING(idsmjestaj)
+                        JOIN TIP_SMJESTAJA USING(idtipsmjestaja)
+                        WHERE idvlasnik = $1 otkazano = false
+                        AND datodlaska > CURRENT_DATE
+                        ORDER BY datrezervacije desc
+                        LIMIT $2
+                        OFFSET $3`;
+         
+         const { rows } = await pool.query(query, [userId, req.query.pageSize, (req.query.page - 1) * req.query.pageSize]);
+
+         const query2 = `SELECT *
+                           FROM REZERVACIJA JOIN SMJESTAJ USING(idsmjestaj)
+                           WHERE idvlasnik = $1`;
+         
+         const { rowCount } = await pool.query(query2, [userId]);
+         res.status(200).json({ reservations: rows, totalCount: rowCount });
+      } catch (error) {
+         console.error('Error:', error);
+         res.status(500).json({ message: 'Failed to get reservations' });
+      }
+   }
+});
+
+router.get("/previousReservations", verifyToken, async (req, res) => {
+   if (req.user.nazuloga === "guest") {
+      try {
+         const userId = req.user.idkorisnik;
+         const query = `SELECT idsmjestaj, idrezervacija, datrezervacije, nazivsmjestaja, naztipasmjestaja, drzava || ' (' || postanskibroj || ' ' || adresa || ', ' || grad || ')' as lokacija, brojgostiju, datdolaska, datodlaska, placeno, otkazano
+                        FROM REZERVACIJA JOIN SMJESTAJ USING(idsmjestaj)
+                        JOIN TIP_SMJESTAJA USING(idtipsmjestaja)
+                        WHERE idgost = $1 AND otkazano = false
+                        AND datodlaska <= CURRENT_DATE
+                        ORDER BY datrezervacije desc
+                        LIMIT $2
+                        OFFSET $3`;
+   
+         const { rows } = await pool.query(query, [userId, req.query.pageSize, (req.query.page - 1) * req.query.pageSize]);
+   
+         const query2 = `SELECT *
+                           FROM REZERVACIJA
+                           WHERE idgost = $1`;
+   
+         const { rowCount } = await pool.query(query2, [userId]);
+         res.status(200).json({ reservations: rows, totalCount: rowCount });
+      } catch (error) {
+         console.error('Error:', error);
+         res.status(500).json({ message: 'Failed to get reservations' });
+      }
+   }
+   else if (req.user.nazuloga === "owner") {
+      try {
+         const userId = req.user.idkorisnik;
+         const query = `SELECT idsmjestaj, idrezervacija, datrezervacije, nazivsmjestaja, naztipasmjestaja, drzava || ' (' || postanskibroj || ' ' || adresa || ', ' || grad || ')' as lokacija, brojgostiju, datdolaska, datodlaska, placeno, otkazano
+                        FROM REZERVACIJA JOIN SMJESTAJ USING(idsmjestaj)
+                        JOIN TIP_SMJESTAJA USING(idtipsmjestaja)
+                        WHERE idvlasnik = $1 otkazano = false
+                        AND datodlaska <= CURRENT_DATE
+                        ORDER BY datrezervacije desc
+                        LIMIT $2
+                        OFFSET $3`;
+         
+         const { rows } = await pool.query(query, [userId, req.query.pageSize, (req.query.page - 1) * req.query.pageSize]);
+
+         const query2 = `SELECT *
+                           FROM REZERVACIJA JOIN SMJESTAJ USING(idsmjestaj)
+                           WHERE idvlasnik = $1`;
+         
+         const { rowCount } = await pool.query(query2, [userId]);
+         res.status(200).json({ reservations: rows, totalCount: rowCount });
+      } catch (error) {
+         console.error('Error:', error);
+         res.status(500).json({ message: 'Failed to get reservations' });
+      }
+   }
+});
+
+router.get("/canceledReservations", verifyToken, async (req, res) => {
+   if (req.user.nazuloga === "guest") {
+      try {
+         const userId = req.user.idkorisnik;
+         const query = `SELECT idsmjestaj, idrezervacija, datrezervacije, nazivsmjestaja, naztipasmjestaja, drzava || ' (' || postanskibroj || ' ' || adresa || ', ' || grad || ')' as lokacija, brojgostiju, datdolaska, datodlaska, placeno, otkazano
+                        FROM REZERVACIJA JOIN SMJESTAJ USING(idsmjestaj)
+                        JOIN TIP_SMJESTAJA USING(idtipsmjestaja)
+                        WHERE idgost = $1 AND otkazano = true
+                        ORDER BY datrezervacije desc
+                        LIMIT $2
+                        OFFSET $3`;
+   
+         const { rows } = await pool.query(query, [userId, req.query.pageSize, (req.query.page - 1) * req.query.pageSize]);
+   
+         const query2 = `SELECT *
+                           FROM REZERVACIJA
+                           WHERE idgost = $1`;
+   
+         const { rowCount } = await pool.query(query2, [userId]);
+         res.status(200).json({ reservations: rows, totalCount: rowCount });
+      } catch (error) {
+         console.error('Error:', error);
+         res.status(500).json({ message: 'Failed to get reservations' });
+      }
+   }
+   else if (req.user.nazuloga === "owner") {
+      try {
+         const userId = req.user.idkorisnik;
+         const query = `SELECT idsmjestaj, idrezervacija, datrezervacije, nazivsmjestaja, naztipasmjestaja, drzava || ' (' || postanskibroj || ' ' || adresa || ', ' || grad || ')' as lokacija, brojgostiju, datdolaska, datodlaska, placeno, otkazano
+                        FROM REZERVACIJA JOIN SMJESTAJ USING(idsmjestaj)
+                        JOIN TIP_SMJESTAJA USING(idtipsmjestaja)
+                        WHERE idvlasnik = $1 otkazano = true
+                        ORDER BY datrezervacije desc
+                        LIMIT $2
+                        OFFSET $3`;
+         
+         const { rows } = await pool.query(query, [userId, req.query.pageSize, (req.query.page - 1) * req.query.pageSize]);
+
+         const query2 = `SELECT *
+                           FROM REZERVACIJA JOIN SMJESTAJ USING(idsmjestaj)
+                           WHERE idvlasnik = $1`;
+         
+         const { rowCount } = await pool.query(query2, [userId]);
+         res.status(200).json({ reservations: rows, totalCount: rowCount });
+      } catch (error) {
+         console.error('Error:', error);
+         res.status(500).json({ message: 'Failed to get reservations' });
+      }
+   }
+});
+
+router.get("/occupiedDates", async (req, res) => {
+   try {
+      const query = `SELECT datdolaska, datodlaska
+                     FROM REZERVACIJA
+                     WHERE idsmjestaj = $1
+                     AND otkazano = false`;
+      
+      const { rows } = await pool.query(query, [req.query.id]);
+
+      res.status(200).json(rows);
+   } catch (error) {
+      console.error('Error:', error);
+      res.status(500).json({ message: 'Failed to get dates' });
+   }
+});
+
+router.get("/madeReservation", verifyToken, async (req, res) => {
+   if (req.user.nazuloga === "guest") {
+      try {
+         const query = `SELECT *
+                        FROM REZERVACIJA
+                        WHERE datodlaska <= CURRENT_DATE
+                        AND idgost = $1 AND idsmjestaj = $2`;
+         
+         console.log(req.user.idkorisnik);
+         const { rows } = await pool.query(query, [req.user.idkorisnik, req.query.id]);
+
+         if (rows.length > 0) {
+            res.status(200).json({madeReservation: true});
+         }
+         else {
+            res.status(404).json({madeReservation: false});
+         }
+      } catch (error) {
+         console.error('Error:', error);
+         res.status(500).json({ message: 'Failed to check' });
+      }
+   }
+   else {
+      res.status(404).json({ addedRating: false });
+   }
 });
 
 router.post("/makeReservation", verifyToken, async (req, res) => {
-   if (req.user.nazuloga == "gost") {
+   if (req.user.nazuloga === "guest") {
       try {
          const { idGost, idSmjestaj, datDolaska, datOdlaska, brojGostiju, placeno, otkazano } = req.body;
          const query = `INSERT INTO REZERVACIJA (idgost, idsmjestaj, datdolaska, datodlaska, brojgostiju, placeno, otkazano)
@@ -577,19 +814,28 @@ router.post("/makeReservation", verifyToken, async (req, res) => {
          res.status(200).json({ message: "ok" });
       } catch (error) {
          console.error('Error:', error);
-      res.status(500).json({ message: 'Failed to make reservation' });
+         res.status(500).json({ message: 'Failed to make reservation' });
       }
    }
 });
 
+router.post("/cancelReservation", verifyToken, async (req, res) => {
+   if (req.user.nazuloga === "guest") {
+      try {
+         const query = `UPDATE REZERVACIJA
+                        SET otkazano = true
+                        WHERE idrezervacija = $1`;
+         await pool.query(query, [req.query.id]);
+         res.status(200).json({ message: "ok" });
+      } catch (error) {
+         console.error('Error:', error);
+         res.status(500).json({ message: 'Failed to cancel reservation' });
+      }
+   }
+})
+
 
 router.post('/findAccommodations', async (req, res) => {
-   // select * from smjestaj join tip_smjestaja using(idtipsmjestaja)
-   // where idsmjestaj not in (
-   //    select idsmjestaj from rezervacija
-   //    where datdolaska < '2024-05-28' AND datodlaska > '2024-05-26'
-   // ) 
-
    try {
       const { grad, drzava, datDolaska, datOdlaska, brojGostiju } = req.body;
       const query = `SELECT *
@@ -600,6 +846,7 @@ router.post('/findAccommodations', async (req, res) => {
                         SELECT idsmjestaj
                         FROM REZERVACIJA
                         WHERE datdolaska < $4 AND datodlaska > $5
+                        AND otkazano = false
                      )`;
       
       const { rows } = await pool.query(query, [grad, drzava, brojGostiju, datOdlaska, datDolaska]);
@@ -624,5 +871,114 @@ router.get('/getAllLocations', async (req, res) => {
       res.status(500).json({ message: 'Failed to get all locations' });
    }
 });
+
+router.get("/getVisibleRatings", async (req, res) => {
+   try {
+      const query = `SELECT idrecenzija, korisnickoime, tekst, ocjena, vidljiv
+                     FROM RECENZIJA
+                     JOIN KORISNIK ON idgost = idkorisnik
+                     WHERE idsmjestaj = $1 AND vidljiv = true`;
+      
+      const { rows } = await pool.query(query, [req.query.id]);
+
+      res.status(200).json(rows);
+   } catch (error) {
+      console.error('Error:', error);
+      res.status(500).json({ message: 'Failed to get ratings' });
+   }
+});
+
+router.get("/getAllRatings", verifyToken, async (req, res) => {
+   if (req.user.nazuloga === "admin") {
+      try {
+         const query = `SELECT idrecenzija, korisnickoime, tekst, ocjena, vidljiv
+                        FROM RECENZIJA
+                        JOIN KORISNIK ON idgost = idkorisnik
+                        WHERE idsmjestaj = $1`;
+         
+         const { rows } = await pool.query(query, [req.query.id]);
+   
+         res.status(200).json(rows);
+      } catch (error) {
+         console.error('Error:', error);
+         res.status(500).json({ message: 'Failed to get ratings' });
+      }
+   }
+});
+
+router.post("/addRating", verifyToken, async (req, res) => {
+   if (req.user.nazuloga === "guest") {
+      try {
+         const { tekst, ocjena } = req.body;
+         const userId = req.user.idkorisnik;
+         const query = `INSERT INTO RECENZIJA (idgost, idsmjestaj, tekst, ocjena)
+                        VALUES($1, $2, $3, $4)`;
+         
+         await pool.query(query, [userId, req.query.id, tekst, ocjena]);
+         res.status(200).json({ message: "ok" });
+      } catch (error) {
+         console.error('Error:', error);
+         res.status(500).json({ message: 'Failed to add rating' });
+      }
+   }
+});
+
+router.get("/removeRating", verifyToken, async (req, res) => {
+   if (req.user.nazuloga === "admin") {
+      try {
+         const query = `UPDATE RECENZIJA
+                        SET vidljiv = false
+                        WHERE idrecenzija = $1`;
+         
+         await pool.query(query, [req.query.id]);
+         res.status(200).json({ message: "ok" });
+      } catch (error) {
+         console.error('Error:', error);
+         res.status(500).json({ message: 'Failed to remove rating' });
+      }
+   }
+});
+
+router.get("/returnRating", verifyToken, async (req, res) => {
+   if (req.user.nazuloga === "admin") {
+      try {
+         const query = `UPDATE RECENZIJA
+                        SET vidljiv = true
+                        WHERE idrecenzija = $1`;
+         
+         await pool.query(query, [req.query.id]);
+         res.status(200).json({ message: "ok" });
+      } catch (error) {
+         console.error('Error:', error);
+         res.status(500).json({ message: 'Failed to remove rating' });
+      }
+   }
+});
+
+router.get("/addedRating", verifyToken, async (req, res) => {
+   if (req.user.nazuloga === "guest") {
+      try {
+         const userId = req.user.idkorisnik;
+         const query = `SELECT *
+                        FROM RECENZIJA
+                        WHERE idgost = $1 AND idsmjestaj = $2`;
+         
+         const { rows } = await pool.query(query, [userId, req.query.id]);
+
+         if (rows.length > 0) {
+            res.status(200).json({addedRating: true});
+         }
+         else {
+            res.status(404).json({addedRating: false});
+         }
+      } catch (error) {
+         console.error('Error:', error);
+         res.status(500).json({ message: 'Failed to check' });
+      }
+   }
+   else {
+      res.status(404).json({ addedRating: false });
+   }
+})
 
 module.exports = router;

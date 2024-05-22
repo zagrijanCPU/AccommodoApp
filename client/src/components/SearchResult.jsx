@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { baseUrl, getImageSource } from "../App";
+import { baseUrl } from "../App";
 import { useLocation } from "react-router-dom";
 import Loading from "./Loading/Loading";
 import SearchForm from "./SearchForm";
-import AllAccommodations from "./Accommodations/AllAccommodations";
+import Accommodations from "./Accommodations/Accommodations";
+import FilteredAccommodations from "./Accommodations/FilteredAccommodations";
 
 const SearchResult = () => {
 
@@ -60,8 +61,7 @@ const SearchResult = () => {
             :
             <div className="container">
                <SearchForm city={city} country={country} commingDate={commingDate} leavingDate={leavingDate} numberOfGuests={numberOfGuests} />
-               <AllAccommodations accommodations={accommodations} />
-               
+               <FilteredAccommodations accommodations={accommodations} city={city} country={country} commingDate={commingDate} leavingDate={leavingDate} numberOfGuests={numberOfGuests} />
             </div>
          }
       </>

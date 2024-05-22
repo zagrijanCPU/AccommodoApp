@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import PendingRequests from './PendingRequests';
-import ApprovedRequests from './ApprovedRequests';
-import DiscardedRequests from './DiscardedRequests';
+import ShowPendingRequests from './ShowPendingRequests';
+import ShowApprovedRequests from './ShowApprovedRequests';
+import ShowDiscardedRequests from './ShowDiscardedRequests';
 
-const AllRequests = () => {
+const ShowRequests = () => {
    return (
       <div className="container mt-3">
          <ul className="nav nav-pills" role="tablist">
@@ -22,15 +22,15 @@ const AllRequests = () => {
 
          <div className="tab-content">
             <div id='pending' className='container tab-pane active'>
-               <PendingRequests />
+               <ShowPendingRequests />
             </div>
 
             <div id='approved' className='container tab-pane fade'>
-               <ApprovedRequests />
+               <ShowApprovedRequests />
             </div>
 
             <div id='discarded' className='container tab-pane fade'>
-               <DiscardedRequests />
+               <ShowDiscardedRequests />
             </div>
          </div>
       </div>
@@ -38,4 +38,4 @@ const AllRequests = () => {
 
 }
 
-export default AllRequests;
+export default ShowRequests;

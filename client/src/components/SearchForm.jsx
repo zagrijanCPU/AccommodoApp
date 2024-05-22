@@ -1,6 +1,7 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { baseUrl } from "../App";
 import { useNavigate } from "react-router-dom";
+import { setErrorMessage } from "./Functions";
 
 function SearchForm(props) {
 
@@ -39,23 +40,11 @@ function SearchForm(props) {
          if (response.ok) {
             const data = await response.json();
             setLocations(data);
-            console.log(data);
          }
       } catch (error) {
          console.log("Error: ", error);
       }
    }
-
-   const setErrorMessage = (error, message) => {
-      if (error) {
-         var errorMessage = document.querySelector(".error-message");
-         errorMessage.innerHTML = message;
-         errorMessage.style.color = "red";
-      } else {
-         var errorMessage = document.querySelector(".error-message");
-         errorMessage.innerHTML = "";
-      }
-   };
 
    const validation = () => {
       if (searchTerm == "" ||
@@ -75,12 +64,6 @@ function SearchForm(props) {
       if (!validation()) {
          return;
       }
-      // console.log(searchTerm);
-      // console.log(commingDate);
-      // console.log(leavingDate);
-      // console.log(numberOfGuests);
-      // console.log(numberOfParkingSpots);
-
       const city = searchTerm.split(", ")[0];
       const country = searchTerm.split(", ")[1]
 

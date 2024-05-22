@@ -15,7 +15,6 @@ router.post('/', async (req, res) => {
       const { rows } = await pool.query(query, [korisnickoIme]);
 
       const user = rows[0];
-      // console.log(user);
 
       if (user) {
          bcrypt.compare(lozinka, user.lozinka, (err, result) => {
@@ -41,8 +40,6 @@ router.post('/', async (req, res) => {
       else {
          res.status(401).json({ message: "Incorrect username or password!" });
       }
-
-
    } catch (error) {
       res.status(500).json({ error: 'Internal Server Error', details: error.message });
    }

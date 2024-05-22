@@ -15,12 +15,13 @@ function Navbar() {
         </button>
         <div className="collapse navbar-collapse" id="mynavbar">
           <ul className="navbar-nav">
-            {(storedToken && role === "gost") && <Navitem path="/myReservations" text="My Reservations" />}
-            {(storedToken && role === "vlasnik") && <Navitem path="/myAccommodations" text="My Accommodations" />}
-            {(storedToken && role === "vlasnik") && <Navitem path="/sendRequest" text="Send Request" />}
+            {(storedToken && role === "guest") && <Navitem path="/myReservations" text="My Reservations" />}
+            {(storedToken && role === "owner") && <Navitem path="/myAccommodations" text="My Accommodations" />}
+            {(storedToken && role === "owner") && <Navitem path="/sendRequest" text="Send Request" />}
             {(storedToken && role === "admin") && <Navitem path="/allAccommodations" text="All Accommodations" />}
             {(storedToken && role === "admin") && <Navitem path="/allRequests" text="All Requests" />}
-            {(storedToken && role === "vlasnik") && <Navitem path="/myRequests" text="My Requests" />}
+            {(storedToken && role === "admin") && <Navitem path="/allUsers" text="All Users" />}
+            {(storedToken && role === "owner") && <Navitem path="/myRequests" text="My Requests" />}
             {!storedToken && <Navitem path="/login" text="Login" />}
             {!storedToken && <Navitem path="/register" text="Register" />}
             {storedToken && <Navitem path="/logout" text="Logout" />}

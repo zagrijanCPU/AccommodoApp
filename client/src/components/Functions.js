@@ -172,3 +172,84 @@ export const getAccommodations = async () => {
       return data;
    }
 }
+
+
+// TableView.jsx
+export const handleCancelReservation = async (id) => {
+   if (storedToken) {
+      const response = await fetch(`${baseUrl}/api/data/cancelReservation?id=${id}`, {
+         method: "POST",
+         headers: {
+            "Content-Type": "application/json",
+            "Authorization": storedToken
+         }
+      });
+
+      if (response.ok) {
+         alert('Your reservation is canceled');
+         window.location.reload();
+      }
+   }
+}
+
+export const checkIfUserAddedRating = async (id) => {
+   if (storedToken) {
+      try {
+         const response = await fetch(`${baseUrl}/api/data/addedRating?id=${id}`, {
+            method: "GET",
+            headers: {
+               "Content-Type": "application/json",
+               "Authorization": storedToken
+            }
+         })
+
+         const data = await response.json();
+         return data.addedRating;
+      } catch (error) {
+         console.log("Error: ", error);
+      }
+   }
+}
+
+
+export const deleteAccommodation = async (id) => {
+   if (storedToken) {
+      try {
+         const response = await fetch(`${baseUrl}/api/data/deleteAccommodation?id=${id}`, {
+            method: "GET",
+            headers: {
+               "Content-Type": "application/json",
+               "Authorization": storedToken
+            }
+         })
+
+         if (response.ok) {
+            alert(`[id=${id}]: Accommodation is removed!`);
+            window.location.reload();
+         }
+      } catch (error) {
+         console.log("Error: ", error);
+      }
+   }
+}
+
+export const deleteUser = async (id) => {
+   if (storedToken) {
+      try {
+         const response = await fetch(`${baseUrl}/api/data/deleteUser?id=${id}`, {
+            method: "GET",
+            headers: {
+               "Content-Type": "application/json",
+               "Authorization": storedToken
+            }
+         })
+
+         if (response.ok) {
+            alert(`[id=${id}]: User is removed!`);
+            window.location.reload();
+         }         
+      } catch (error) {
+         console.log("Error: ", error);
+      }
+   }
+}

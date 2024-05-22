@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { baseUrl, itemsType, role, storedToken } from '../../App';
-import TableView from './TableView';
+import TableView from '../TableView/TableView';
 import Loading from '../Loading/Loading';
+import RequestsTableView from '../TableView/RequestsTableView';
 
-const DiscardedRequests = () => {
+const ShowDiscardedRequests = () => {
    const [currentPage, setCurrentPage] = useState(0);
    const [pageCount, setPageCount] = useState(0);
    const [pageSize, setPageSize] = useState(5);
@@ -51,4 +52,4 @@ const DiscardedRequests = () => {
    );
 }
 
-export default DiscardedRequests;
+export default ShowDiscardedRequests;

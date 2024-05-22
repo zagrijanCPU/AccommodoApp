@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { baseUrl, itemsType, role, storedToken } from '../../App';
 import '../../styles/ReactPaginate.css';
-import TableView from './TableView';
+import TableView from '../TableView/TableView';
 import Loading from '../Loading/Loading';
 
-const ApprovedRequests = () => {
+const ShowPendingRequests = () => {
    const [currentPage, setCurrentPage] = useState(0);
    const [pageCount, setPageCount] = useState(0);
    const [pageSize, setPageSize] = useState(5);
@@ -13,7 +13,7 @@ const ApprovedRequests = () => {
 
    const getRequests = async () => {
       try {
-         const response = await fetch(`${baseUrl}/api/data/getApprovedRequests?page=${currentPage + 1}&pageSize=${pageSize}`, {
+         const response = await fetch(`${baseUrl}/api/data/getPendingRequests?page=${currentPage + 1}&pageSize=${pageSize}`, {
             method: "POST",
             headers: {
                "Content-Type": "application/json",
@@ -43,13 +43,13 @@ const ApprovedRequests = () => {
    return (
       <>
          {
-            loading ? 
+            loading ?
                <Loading />
-               : 
+               :
                <TableView items={requests} itemsType={itemsType[0]} pageCount={pageCount} setCurrentPage={setCurrentPage} />
          }
       </>
    );
 }
 
-export default ApprovedRequests;
+export default ShowPendingRequests;

@@ -34,6 +34,17 @@ values('villa');
 insert into tip_smjestaja (nazTipaSmjestaja)
 values('room');
 
+insert into uloga (nazuloga)
+values ('admin');
+insert into uloga (nazuloga)
+values ('owner');
+insert into uloga (nazuloga)
+values ('guest');
+
+insert into vrsta_zahtjeva(nazvrstezahtjeva)
+values('Add Accommodation');
+insert into vrsta_zahtjeva(nazvrstezahtjeva)
+values('Change data');
 
 insert into rezervacija (idgost, idsmjestaj, datdolaska, datodlaska, datrezervacije, brojgostiju, placeno, otkazano)
 values(4, 1, '2024-05-25', '2024-05-31', '2024-05-01', 3, false, false);

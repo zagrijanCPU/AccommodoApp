@@ -40,14 +40,20 @@ CREATE TABLE SMJESTAJ
   adresa VARCHAR(255) NOT NULL,
   postanskiBroj VARCHAR(20) NOT NULL,
   cijena FLOAT NOT NULL,
-  -- geogDuzina FLOAT,
-  -- geogSirina FLOAT,
   kapacitet INT NOT NULL,
   brojParkirnihMjesta INT NOT NULL,
   profilnaSlika BYTEA,
   PRIMARY KEY (idSmjestaj),
   FOREIGN KEY (idVlasnik) REFERENCES KORISNIK(idKorisnik),
   FOREIGN KEY (idTipSmjestaja) REFERENCES TIP_SMJESTAJA(idTipSmjestaja)
+);
+
+CREATE TABLE VRSTA_ZAHTJEVA
+(
+  idVrstaZahtjeva SERIAL NOT NULL,
+  nazVrsteZahtjeva VARCHAR(50) NOT NULL,
+  PRIMARY KEY (idVrstaZahtjeva),
+  UNIQUE (nazVrsteZahtjeva)
 );
 
 CREATE TABLE ZAHTJEV
@@ -86,14 +92,6 @@ CREATE TABLE ZAHTJEV
   )
 );
 
-CREATE TABLE VRSTA_ZAHTJEVA
-(
-  idVrstaZahtjeva SERIAL NOT NULL,
-  nazVrsteZahtjeva VARCHAR(50) NOT NULL,
-  PRIMARY KEY (idVrstaZahtjeva),
-  UNIQUE (nazVrsteZahtjeva)
-);
-
 CREATE TABLE REZERVACIJA
 (
   idRezervacija SERIAL NOT NULL,
@@ -109,7 +107,8 @@ CREATE TABLE REZERVACIJA
   FOREIGN KEY (idGost) REFERENCES KORISNIK(idKorisnik),
   FOREIGN KEY (idSmjestaj) REFERENCES SMJESTAJ(idSmjestaj),
   UNIQUE (idGost, idSmjestaj, datDolaska, datOdlaska)
-  CONSTRAINT datumi_check CHECK (datdolaska >= CURRENT_DATE AND datdolaska < datodlaska)
+  -- CONSTRAINT datumi_check CHECK (datdolaska >= datRezervacije AND datdolaska < datodlaska)
+  CONSTRAINT datumi_check CHECK (datdolaska < datodlaska)
 );
 
 CREATE TABLE RECENZIJA
@@ -117,8 +116,9 @@ CREATE TABLE RECENZIJA
   idRecenzija SERIAL NOT NULL,
   idGost SERIAL NOT NULL,
   idSmjestaj SERIAL NOT NULL,
-  tekst TEXT,
+  tekst TEXT NOT NULL,
   ocjena INT NOT NULL,
+  vidljiv BOOLEAN DEFAULT true,
   PRIMARY KEY (idRecenzija),
   FOREIGN KEY (idGost) REFERENCES KORISNIK(idKorisnik),
   FOREIGN KEY (idSmjestaj) REFERENCES SMJESTAJ(idSmjestaj),

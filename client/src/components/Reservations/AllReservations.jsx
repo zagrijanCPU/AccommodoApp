@@ -1,11 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { baseUrl, itemsType, role, storedToken } from "../../App";
-import ReactPaginate from "react-paginate";
-import { format } from 'date-fns';
 import Loading from "../Loading/Loading";
-import TableView from "../Requests/TableView";
+import TableView from "../TableView/TableView";
 
-const ViewReservations = () => {
+const AllReservations = () => {
    const [reservations, setReservations] = useState([]);
    const [pageCount, setPageCount] = useState(0);
    const [currentPage, setCurrentPage] = useState(0);
@@ -15,13 +13,12 @@ const ViewReservations = () => {
    const getReservations = async () => {
       if (storedToken) {
          try {
-            const response = await fetch(`${baseUrl}/api/data/getReservations?page=${currentPage + 1}&pageSize=${pageSize}`, {
-               method: "POST",
+            const response = await fetch(`${baseUrl}/api/data/allReservations?page=${currentPage + 1}&pageSize=${pageSize}`, {
+               method: "GET",
                headers: {
                   "Content-Type": "application/json",
                   "Authorization": storedToken
                },
-               body: JSON.stringify({ role })
             })
 
             if (response.ok) {
@@ -56,4 +53,4 @@ const ViewReservations = () => {
    );
 }
 
-export default ViewReservations;
+export default AllReservations;

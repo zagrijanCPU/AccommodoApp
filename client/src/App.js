@@ -8,18 +8,16 @@ import Navbar from './components/Navbar/Navbar';
 import Login from './components/AccessControl/Login';
 import Register from './components/AccessControl/Register';
 import Logout from './components/AccessControl/Logout';
-import AllRequests from './components/Requests/AllRequests';
+import ShowRequests from './components/Requests/ShowRequests';
 import SendRequest from './components/Requests/SendRequest';
 import ShowRequest from './components/Requests/ShowRequest';
 import ShowAccommodations from './components/Accommodations/ShowAccommodations';
 import ShowAccommodation from './components/Accommodations/ShowAccommodation';
 import SearchResult from './components/SearchResult';
-import ViewReservations from './components/Reservations/ViewReservations';
-
+import Reservations from './components/Reservations/Reservations';
+import ShowUsers from './components/Users/ShowUsers';
 
 function App() {
-
-
   return (
     <div className="App">
       <Navbar />
@@ -29,15 +27,16 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/logout" element={<Logout />} />
-          <Route path="/allRequests" element={<AllRequests />} />
-          <Route path="/myRequests" element={<AllRequests />} />
+          <Route path="/allRequests" element={<ShowRequests />} />
+          <Route path="/myRequests" element={<ShowRequests />} />
           <Route path="/sendRequest" element={<SendRequest />} />
           <Route path="/request/:id" element={<ShowRequest />} />
           <Route path="/myAccommodations" element={<ShowAccommodations />} />
           <Route path="/allAccommodations" element={<ShowAccommodations />} />
           <Route path="/accommodation/:id" element={<ShowAccommodation />} />
           <Route path="/searchResult" element={<SearchResult />} />
-          <Route path="/myReservations" element={<ViewReservations />} />
+          <Route path="/myReservations" element={<Reservations />} />
+          <Route path="/allUsers" element={<ShowUsers />} />
         </Routes>
       </Router>
     </div>
@@ -63,7 +62,7 @@ export const getPdfSource = (pdfData) => {
   return pdfUrl;
 };
 
-export const itemsType = ["requests", "accommodations", "reservations"];
+export const itemsType = ["requests", "accommodations", "reservations", "users"];
 
 export default App;
 

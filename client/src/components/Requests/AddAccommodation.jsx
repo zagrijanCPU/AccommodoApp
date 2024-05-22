@@ -65,11 +65,9 @@ const AddAccommodation = (props) => {
 
    const handleSubmit = async (event) => {
       event.preventDefault();
-
       if (!validation()) {
          return;
       }
-      
       const formData = new FormData();
       formData.append('idVrstaZahtjeva', requestTypeId);
       formData.append('idVlasnik', userId);
@@ -85,7 +83,6 @@ const AddAccommodation = (props) => {
       formData.append('profilnaSlika', profilePicture);
       formData.append('kategorizacija', categorization);
       formData.append('vlasnickiList', ownershipCertificate);
-
       try {
          const response = await fetch(`${baseUrl}/api/data/addAccommodationRequest`, {
             method: 'POST',

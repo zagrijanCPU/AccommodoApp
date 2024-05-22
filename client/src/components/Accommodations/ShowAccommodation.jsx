@@ -1,11 +1,11 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
-import { baseUrl, getImageSource, role } from "../../App";
+import { baseUrl, role, storedToken } from "../../App";
 import Loading from "../Loading/Loading";
-import { Modal } from "react-bootstrap";
-import { getAccommodation, getRequestTypes, getUserId, setErrorMessage } from "../Functions";
+import { getAccommodation, getRequestTypes, getUserId } from "../Functions";
 import ShowAccommodationOwnerView from "./ShowAccommodationOwnerView";
 import ShowAccommodationGuestView from "./ShowAccommodationGuestView";
+import ShowAccommodationAdminView from "./ShowAccommodationAdminView";
 
 const ShowAccommodation = () => {
    var { id } = useParams();
@@ -28,12 +28,12 @@ const ShowAccommodation = () => {
       brojparkirnihmjesta: "",
       profilnaslika: ""
    });
+   const [intervals, setIntervals] = useState([]);
 
    const getData = async () => {
       var data = await getAccommodation(id);
       if (data) {
          setAccommodation(data);
-         setLoading(false);
       }
 
       data = await getUserId();
@@ -41,7 +41,7 @@ const ShowAccommodation = () => {
          setUserId(data.toString());
       }
 
-      if (role == "vlasnik") {
+      if (role == "owner") {
          data = await getRequestTypes();
          if (data) {
             for (var i = 0; i < data.length; i++) {
@@ -50,6 +50,31 @@ const ShowAccommodation = () => {
                }
             }
          }
+      }
+      await getIntervals();
+      setLoading(false);
+   }
+
+   const getIntervals = async () => {
+      try {
+         const response = await fetch(`${baseUrl}/api/data/occupiedDates?id=${id}`, {
+            method: "GET",
+            headers: {
+               "Content-Type": "application/json"
+            }
+         })
+
+         if (response.ok) {
+            const data = await response.json();
+            // console.log(data);
+            var temp = []
+            data.forEach(element => {
+               temp.push({start: new Date(element.datdolaska.split("T")[0]), end: new Date(element.datodlaska.split("T")[0])});
+            });
+            setIntervals(temp);
+         }
+      } catch (error) {
+         console.log("Error: ", error);
       }
    }
 
@@ -63,10 +88,11 @@ const ShowAccommodation = () => {
             loading ?
                <Loading />
                :
-               role == "vlasnik" ?
-                  <ShowAccommodationOwnerView accommodation={accommodation} setAccommodation={setAccommodation} userId={userId} requestTypeId={requestTypeId} />
-                  :
-                  <ShowAccommodationGuestView accommodation={accommodation} userId={userId} />
+               <>
+                  {role == "owner" && <ShowAccommodationOwnerView accommodation={accommodation} setAccommodation={setAccommodation} userId={userId} requestTypeId={requestTypeId} intervals={intervals} />}
+                  {(role == "guest" || !storedToken) && <ShowAccommodationGuestView accommodation={accommodation} userId={userId} intervals={intervals} />}
+                  {role == "admin" && <ShowAccommodationAdminView accommodation={accommodation} userId={userId} intervals={intervals} />}
+               </>
          }
       </>
    );

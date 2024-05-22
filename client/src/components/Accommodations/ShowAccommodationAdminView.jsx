@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { baseUrl, getImageSource, role, storedToken } from "../../App";
 import { Modal } from "react-bootstrap";
-import { checkIfUserAddedRating, setErrorMessage } from "../Functions";
+import { setErrorMessage } from "../Functions";
 import { useLocation, useNavigate } from "react-router-dom";
 import SearchForm from "../SearchForm";
 import ViewRatings from "../Ratings/ViewRatings";
@@ -9,7 +9,7 @@ import CustomCalendar from "../Calendars/CustomCalendar";
 import AddRating from "../Ratings/AddRating";
 import Loading from "../Loading/Loading";
 
-const ShowAccommodationGuestView = (props) => {
+const ShowAccommodationAdminView = (props) => {
    const location = useLocation();
    const queryParams = new URLSearchParams(location.search);
    const accommodation = props.accommodation;
@@ -45,9 +45,28 @@ const ShowAccommodationGuestView = (props) => {
       }
    }
 
+   const checkIfUserAddedRating = async (id) => {
+      if (storedToken) {
+         try {
+            const response = await fetch(`${baseUrl}/api/data/addedRating?id=${id}`, {
+               method: "GET",
+               headers: {
+                  "Content-Type": "application/json",
+                  "Authorization": storedToken
+               }
+            })
+
+            const data = await response.json();
+            setAddedRating(data.addedRating);
+         } catch (error) {
+            console.log("Error: ", error);
+         }
+      }
+   }
+
    const checks = async () => {
       await checkIfUserMadeReservation(accommodation.idsmjestaj);
-      setAddedRating(await checkIfUserAddedRating(accommodation.idsmjestaj));
+      await checkIfUserAddedRating(accommodation.idsmjestaj);
       setLoading(false);
    }
 
@@ -169,30 +188,12 @@ const ShowAccommodationGuestView = (props) => {
                      {(role == "guest" || !storedToken) &&
                         <a className="btn btn-primary" onClick={() => {
                            if (queryParams.size == 0) {
-                              if (storedToken) {
-                                 alert('You must pick the dates first!');
-                                 navigate('/');
-                                 window.location.reload();
-                                 return;
-                              }
-                              else {
-                                 alert('You must login first!');
-                                 navigate('/login');
-                                 window.location.reload();
-                                 return;
-                              }
+                              alert('You must pick the dates first!');
+                              navigate('/');
+                              window.location.reload();
+                              return;
                            }
-                           else {
-                              if (storedToken) {
-                                 setShowSuccessModal(true);
-                              }
-                              else {
-                                 alert('You must login first!');
-                                 navigate('/login');
-                                 window.location.reload();
-                                 return;
-                              }
-                           }
+                           setShowSuccessModal(true);
                         }}>Make reservation</a>
                      }
                   </div>
@@ -213,8 +214,9 @@ const ShowAccommodationGuestView = (props) => {
 
          <Modal show={showSuccessModal} onHide={() => setShowSuccessModal(false)}>
             <Modal.Header closeButton>
-               <Modal.Title>"Enter your card info"</Modal.Title>
+               <Modal.Title>{storedToken ? "Enter your card info" : "Login to make reservation"}</Modal.Title>
             </Modal.Header>
+            {storedToken &&
                <Modal.Body>
                   <div className='error-message'></div>
                   <div className='form-group'>
@@ -239,7 +241,7 @@ const ShowAccommodationGuestView = (props) => {
                         className='form-control'
                         id='cardName'
                         value={creditCardName}
-                        placeholder='John Doe'
+                        placeholder='Pero Perić'
                         onChange={(e) => {
                            handleCardNameInput(e);
                            setErrorMessage(false, "");
@@ -275,12 +277,13 @@ const ShowAccommodationGuestView = (props) => {
                      />
                   </div>
                </Modal.Body>
+            }
             <Modal.Footer>
-               <a className="btn btn-primary" onClick={handlePayment}>Pay</a>
+               {storedToken ? <a className="btn btn-primary" onClick={handlePayment}>Pay</a> : <a className="btn btn-primary" href="/login">Login</a>}
             </Modal.Footer>
          </Modal>
       </div>
    );
 }
 
-export default ShowAccommodationGuestView;
+export default ShowAccommodationAdminView;

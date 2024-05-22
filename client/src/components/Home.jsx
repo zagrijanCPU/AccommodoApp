@@ -1,24 +1,18 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import SearchForm from "./SearchForm";
 import AllAccommodations from "./Accommodations/AllAccommodations";
-import { getAccommodations } from "./Functions";
+import { role, storedToken } from "../App";
 
 function Home() {
 
-   const [accommodations, setAccommodations] = useState([]);
-
-   const getData = async () => {
-      setAccommodations(await getAccommodations());
-   }
-
-   useEffect(() => {
-      getData();
-   }, []);
-
    return (
       <>
-         <SearchForm />
-         <AllAccommodations accommodations={accommodations} />
+         {(role === "guest" || !storedToken) &&
+            <>
+               <SearchForm />
+               <AllAccommodations />
+            </>
+         }
       </>
    );
 }

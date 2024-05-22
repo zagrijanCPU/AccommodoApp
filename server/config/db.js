@@ -1,4 +1,3 @@
-// u datoteci db.js ili slično
 const { Pool } = require('pg');
 
 const pool = new Pool({
@@ -8,7 +7,5 @@ const pool = new Pool({
    password: 'baze',
    port: 5432,
 });
-
-
 
 module.exports = pool;
