@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import ShowPendingRequests from './ShowPendingRequests';
 import ShowApprovedRequests from './ShowApprovedRequests';
 import ShowDiscardedRequests from './ShowDiscardedRequests';

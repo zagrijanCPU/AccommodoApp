@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { baseUrl, itemsType, role, storedToken } from "../../App";
-import ReactPaginate from "react-paginate";
 import '../../styles/ReactPaginate.css';
 import TableView from "../TableView/TableView";
 import Loading from "../Loading/Loading";

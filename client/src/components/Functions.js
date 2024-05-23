@@ -62,6 +62,17 @@ export const setErrorMessage = (error, message) => {
    }
 };
 
+export const setErrorMessageForElement = (error, message, element) => {
+   if (error) {
+      var errorMessage = document.querySelector("."+element);
+      errorMessage.innerHTML = message;
+      errorMessage.style.color = "red";
+   } else {
+      var errorMessage = document.querySelector("."+element);
+      errorMessage.innerHTML = "";
+   }
+};
+
 export const uloge = async () => {
    const response = await fetch(`${baseUrl}/api/data/uloge`, {
       method: "GET",

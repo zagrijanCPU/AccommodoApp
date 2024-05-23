@@ -270,9 +270,23 @@ router.post('/changeDataRequest', upload.single('profilnaSlika'), async (req, re
       const { idVrstaZahtjeva, idVlasnik, idSmjestaj, idTipSmjestaja, nazivSmjestaja, drzava, grad, adresa, postanskiBroj, cijena, kapacitet, brojParkirnihMjesta } = req.body;
       var profilnaSlika = req.file.buffer;
 
-      const query = `INSERT INTO ZAHTJEV (idvrstazahtjeva, idvlasnik, idsmjestaj, idtipsmjestaja, nazivsmjestaja, drzava, grad, adresa, postanskibroj, cijena, kapacitet, brojparkirnihmjesta, profilnaslika)
+      const query = `INSERT INTO ZAHTJEV (idvrstazahtjeva, idvlasnik, idsmjestaj, idtipsmjestaja, nazivsmjestaja, 
+                                          drzava, grad, adresa, postanskibroj, cijena, kapacitet, brojparkirnihmjesta, profilnaslika)
                      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`;
-      await pool.query(query, [idVrstaZahtjeva, idVlasnik, idSmjestaj, idTipSmjestaja, nazivSmjestaja, drzava, grad, adresa, postanskiBroj, cijena, kapacitet, brojParkirnihMjesta, profilnaSlika]);
+      await pool.query(query, [
+         idVrstaZahtjeva,
+         idVlasnik,
+         idSmjestaj,
+         idTipSmjestaja,
+         nazivSmjestaja,
+         drzava,
+         grad,
+         adresa,
+         postanskiBroj,
+         cijena,
+         kapacitet,
+         brojParkirnihMjesta,
+         profilnaSlika]);
       res.status(200).json({ message: "ok" });
    } catch (error) {
       console.error('Greška prilikom izvršavanja upita:', error);
@@ -480,57 +494,58 @@ router.post('/getRequest', verifyToken, async (req, res) => {
 
 // approveClaim: requires token as Authorization, returns status 200
 router.post('/approveRequest', verifyToken, async (req, res) => {
-   if (req.body.nazivVrsteZahtjeva === "Add Accommodation") {
-      try {
-         const query = `UPDATE ZAHTJEV
-                        SET nacekanju = false, odobreno = true, odgovor = $1
-                        WHERE idzahtjev = $2
-                        RETURNING idvlasnik, idtipsmjestaja, nazivsmjestaja, drzava, grad, adresa, postanskibroj, cijena, kapacitet, brojparkirnihmjesta, profilnaslika`;
-         const { rows } = await pool.query(query, [req.body.odgovor, req.query.id]);
-   
-         const newAccommodation = rows[0];
-         console.log(rows[0]);
-   
-         // Dodati zahtjev u smještaj
-         const query2 = `INSERT INTO SMJESTAJ (idvlasnik, idtipsmjestaja, nazivsmjestaja, drzava, grad, adresa, postanskibroj, cijena, kapacitet, brojparkirnihmjesta, profilnaslika)
-                        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`;
-   
-         await pool.query(query2, [
-            newAccommodation.idvlasnik,
-            newAccommodation.idtipsmjestaja,
-            newAccommodation.nazivsmjestaja,
-            newAccommodation.drzava,
-            newAccommodation.grad,
-            newAccommodation.adresa,
-            newAccommodation.postanskibroj,
-            newAccommodation.cijena,
-            newAccommodation.kapacitet,
-            newAccommodation.brojparkirnihmjesta,
-            newAccommodation.profilnaslika
-         ])
-   
-         res.status(200).json({ message: "ok" });
-      } catch (error) {
-         console.error('Error:', error);
-         res.status(500).json({ message: 'Failed to approve claim' });
+   if (req.user.nazuloga === "admin") {
+      if (req.body.nazivVrsteZahtjeva === "Add Accommodation") {
+         try {
+            const query = `UPDATE ZAHTJEV
+                           SET nacekanju = false, odobreno = true, odgovor = $1
+                           WHERE idzahtjev = $2
+                           RETURNING idvlasnik, idtipsmjestaja, nazivsmjestaja, drzava, grad, adresa,
+                                    postanskibroj, cijena, kapacitet, brojparkirnihmjesta, profilnaslika`;
+            const { rows } = await pool.query(query, [req.body.odgovor, req.query.id]);
+      
+            const newAccommodation = rows[0];
+            console.log(rows[0]);
+      
+            // Dodati zahtjev u smještaj
+            const query2 = `INSERT INTO SMJESTAJ (idvlasnik, idtipsmjestaja, nazivsmjestaja, drzava, grad, adresa, 
+                                                postanskibroj, cijena, kapacitet, brojparkirnihmjesta, profilnaslika)
+                           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`;
+      
+            await pool.query(query2, [
+               newAccommodation.idvlasnik,
+               newAccommodation.idtipsmjestaja,
+               newAccommodation.nazivsmjestaja,
+               newAccommodation.drzava,
+               newAccommodation.grad,
+               newAccommodation.adresa,
+               newAccommodation.postanskibroj,
+               newAccommodation.cijena,
+               newAccommodation.kapacitet,
+               newAccommodation.brojparkirnihmjesta,
+               newAccommodation.profilnaslika
+            ])
+      
+            res.status(200).json({ message: "ok" });
+         } catch (error) {
+            console.error('Error:', error);
+            res.status(500).json({ message: 'Failed to approve claim' });
+         }
       }
-   }
-   else if (req.body.nazivVrsteZahtjeva === "Change data") {
-      try {
-         const query = `UPDATE ZAHTJEV
-                        SET nacekanju = false, odobreno = true, odgovor = $1
-                        WHERE idzahtjev = $2
-                        RETURNING idvlasnik, idsmjestaj, idtipsmjestaja, nazivsmjestaja, drzava, grad, adresa, postanskibroj, cijena, kapacitet, brojparkirnihmjesta, profilnaslika`;
-         const { rows } = await pool.query(query, [req.body.odgovor, req.query.id]);
-   
-         const updateAccommodation = rows[0];
-         console.log(rows[0]);
-         
-         // Update smještaj
-         var query2;
-         if (updateAccommodation.profilnaslika) {
-            console.log("promijeni i sliku");
-            query2 = `UPDATE SMJESTAJ
+      else if (req.body.nazivVrsteZahtjeva === "Change data") {
+         try {
+            const query = `UPDATE ZAHTJEV
+                           SET nacekanju = false, odobreno = true, odgovor = $1
+                           WHERE idzahtjev = $2
+                           RETURNING idvlasnik, idsmjestaj, idtipsmjestaja, nazivsmjestaja, drzava, grad,
+                                       adresa, postanskibroj, cijena, kapacitet, brojparkirnihmjesta, profilnaslika`;
+            const { rows } = await pool.query(query, [req.body.odgovor, req.query.id]);
+      
+            const updateAccommodation = rows[0];
+            console.log(rows[0]);
+            
+            // Update smještaj
+            const query2 = `UPDATE SMJESTAJ
                      SET nazivsmjestaja = $1,
                         adresa = $2,
                         cijena = $3,
@@ -546,31 +561,12 @@ router.post('/approveRequest', verifyToken, async (req, res) => {
                updateAccommodation.brojparkirnihmjesta,
                updateAccommodation.profilnaslika,
                updateAccommodation.idsmjestaj
-            ]);
+            ]);      
+            res.status(200).json({ message: "ok" });
+         } catch (error) {
+            console.error('Error:', error);
+            res.status(500).json({ message: 'Failed to approve claim' });
          }
-         else {
-            console.log("ovdje");
-            query2 = `UPDATE SMJESTAJ
-                     SET nazivsmjestaja = $1,
-                        adresa = $2,
-                        cijena = $3,
-                        kapacitet = $4,
-                        brojparkirnihmjesta = $5
-                     WHERE idsmjestaj = $6`;
-            await pool.query(query2, [
-               updateAccommodation.nazivsmjestaja,
-               updateAccommodation.adresa,
-               updateAccommodation.cijena,
-               updateAccommodation.kapacitet,
-               updateAccommodation.brojparkirnihmjesta,
-               updateAccommodation.idsmjestaj
-            ]);
-         }
-   
-         res.status(200).json({ message: "ok" });
-      } catch (error) {
-         console.error('Error:', error);
-         res.status(500).json({ message: 'Failed to approve claim' });
       }
    }
 });

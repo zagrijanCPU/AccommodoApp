@@ -1,8 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { baseUrl, getImageSource, role, storedToken } from "../../App";
 import { Modal } from "react-bootstrap";
-import { format } from 'date-fns';
-import { getUserId } from "../Functions";
+import { getUserId, setErrorMessageFo, setErrorMessageForElement, setErrorMessageForElementrElement } from "../Functions";
 
 const ChangeData = (props) => {
    const requestTypeId = props.requestTypeId;
@@ -77,17 +76,6 @@ const ChangeData = (props) => {
       getData();
    }, []);
 
-   const setErrorMessage = (error, message) => {
-      if (error) {
-         var errorMessage = document.querySelector(".error-message");
-         errorMessage.innerHTML = message;
-         errorMessage.style.color = "red";
-      } else {
-         var errorMessage = document.querySelector(".error-message");
-         errorMessage.innerHTML = "";
-      }
-   };
-
    const getAccommodation = async (accommodationId) => {
       try {
          const response = await fetch(`${baseUrl}/api/data/getAccommodation?id=${accommodationId}`, {
@@ -114,22 +102,23 @@ const ChangeData = (props) => {
 
    const validation = () => {
       if (
-         accommodation.nazivsmjestaja == "" ||
-         accommodation.adresa == "" ||
-         accommodation.cijena == "" ||
-         accommodation.kapacitet == "" ||
-         accommodation.brojparkirnihmjesta == "" ||
+         accommodation.nazivsmjestaja === "" ||
+         accommodation.adresa === "" ||
+         accommodation.cijena === "" ||
+         accommodation.kapacitet === "" ||
+         accommodation.brojparkirnihmjesta === "" ||
          accommodation.profilnaslika == null
       ) {
-         setErrorMessage(true, "All fields are required!");
+         setErrorMessageForElement(true, "All fields are required!", "error-message-2");
          return false;
       }
 
       return true;
    }
 
-   const handleChangeData = async () => {
+   const handleChangeData = async (e) => {
       console.log(accommodation);
+      e.preventDefault();
       if (!validation()) {
          return;
       }
@@ -198,126 +187,126 @@ const ChangeData = (props) => {
             </Modal.Header>
             <Modal.Body style={{ display: 'flex', justifyContent: 'center' }}>
                <div className="container">
-                  <div className="error-message"></div>
-                  <div className="form-group">
-                     <label htmlFor="profilnaSlika">(Click to change image)</label>
-                     <img
-                        src={newImage || getImageSource(accommodation.profilnaslika)}
-                        alt="image"
-                        style={{ width: "100%", cursor: "pointer" }}
-                        onClick={() => {
-                           if (fileInputRef.current) {
-                              fileInputRef.current.click();
-                           }
-                        }}
-                     />
-                     <input
-                        type="file"
-                        id="fileInput"
-                        accept="image/*"
-                        style={{ display: "none" }}
-                        ref={fileInputRef}
-                        onChange={(e) => {
-                           const files = e.target.files;
-                           if (files && files.length > 0) {
-                              const file = files[0];
-                              const imageUrl = URL.createObjectURL(file);
-                              setNewImage(imageUrl);
-                              setAccommodation({ ...accommodation, profilnaslika: file });
-                              console.log(file);
-                              console.log(files);
-                           }
-                        }}
-                     />
-                  </div>
-                  <div className="form-group" style={formGroupStyle}>
-                     <label htmlFor="nazivSmjestaja">Accommodation name</label>
-                     <input
-                        type="text"
-                        className="form-control"
-                        id="nazivSmjestaja"
-                        value={accommodation.nazivsmjestaja}
-                        onChange={(e) => {
-                           setAccommodation({ ...accommodation, nazivsmjestaja: e.target.value });
-                           setErrorMessage(false);
-                        }}
-                     />
-                  </div>
-                  <div className='form-group' style={formGroupStyle}>
-                     <label htmlFor="adresa">Address</label>
-                     <input
-                        type="text"
-                        className='form-control'
-                        id='adresa'
-                        value={accommodation.adresa}
-                        onChange={(e) => {
-                           setAccommodation({ ...accommodation, adresa: e.target.value });
-                           setErrorMessage(false);
-                        }}
-                     />
-                  </div>
-                  <div className='form-group' style={formGroupStyle}>
-                     <label htmlFor="cijena">Price (€)</label>
-                     <input
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        className='form-control'
-                        id='cijena'
-                        value={accommodation.cijena}
-                        onChange={(e) => {
-                           setAccommodation({ ...accommodation, cijena: e.target.value });
-                           setErrorMessage(false);
-                        }}
-                     />
-                  </div>
-                  <div className='form-group' style={formGroupStyle}>
-                     <label htmlFor="kapacitet">Capacity</label>
-                     <input
-                        type="number"
-                        step="1"
-                        min="1"
-                        className='form-control'
-                        id='kapacitet'
-                        value={accommodation.kapacitet}
-                        onChange={(e) => {
-                           setAccommodation({ ...accommodation, kapacitet: e.target.value });
-                           if (e.target.value > 0) {
-                              setErrorMessage(false);
-                           }
-                           else {
-                              setErrorMessage(true, "Capacity needs to be at least 1.")
-                           }
-                        }}
-                     />
-                  </div>
-                  <div className='form-group' style={formGroupStyle}>
-                     <label htmlFor="brojParkirnihMjesta">Number of parking spots</label>
-                     <input
-                        type="number"
-                        step="1"
-                        min="0"
-                        className='form-control'
-                        id='brojParkirnihMjesta'
-                        value={accommodation.brojparkirnihmjesta}
-                        onChange={(e) => {
-                           setAccommodation({ ...accommodation, brojparkirnihmjesta: e.target.value });
-                           if (e.target.value >= 0) {
-                              setErrorMessage(false);
-                           }
-                           else {
-                              setErrorMessage(true, "Number of parking spots needs to be at least 0.")
-                           }
-                        }}
-                     />
-                  </div>
+                  <div className="error-message-2"></div>
+                  <form onSubmit={handleChangeData}>
+                     <div className="form-group">
+                        <label htmlFor="profilnaSlika">(Click to change image)</label>
+                        <img
+                           src={newImage || getImageSource(accommodation.profilnaslika)}
+                           alt="image"
+                           style={{ width: "100%", cursor: "pointer" }}
+                           onClick={() => {
+                              if (fileInputRef.current) {
+                                 fileInputRef.current.click();
+                              }
+                           }}
+                        />
+                        <input
+                           type="file"
+                           id="fileInput"
+                           accept="image/*"
+                           style={{ display: "none" }}
+                           ref={fileInputRef}
+                           onChange={(e) => {
+                              const files = e.target.files;
+                              if (files && files.length > 0) {
+                                 const file = files[0];
+                                 const imageUrl = URL.createObjectURL(file);
+                                 setNewImage(imageUrl);
+                                 setAccommodation({ ...accommodation, profilnaslika: file });
+                                 console.log(file);
+                                 console.log(files);
+                              }
+                           }}
+                        />
+                     </div>
+                     <div className="form-group" style={formGroupStyle}>
+                        <label htmlFor="nazivSmjestaja">Accommodation name</label>
+                        <input
+                           type="text"
+                           className="form-control"
+                           id="nazivSmjestaja"
+                           value={accommodation.nazivsmjestaja}
+                           onChange={(e) => {
+                              setAccommodation({ ...accommodation, nazivsmjestaja: e.target.value });
+                              setErrorMessageForElement(false, "", "error-message-2");
+                           }}
+                        />
+                     </div>
+                     <div className='form-group' style={formGroupStyle}>
+                        <label htmlFor="adresa">Address</label>
+                        <input
+                           type="text"
+                           className='form-control'
+                           id='adresa'
+                           value={accommodation.adresa}
+                           onChange={(e) => {
+                              setAccommodation({ ...accommodation, adresa: e.target.value });
+                              setErrorMessageForElement(false, "", "error-message-2");
+                           }}
+                        />
+                     </div>
+                     <div className='form-group' style={formGroupStyle}>
+                        <label htmlFor="cijena">Price (€)</label>
+                        <input
+                           type="number"
+                           step="0.01"
+                           min="0"
+                           className='form-control'
+                           id='cijena'
+                           value={accommodation.cijena}
+                           onChange={(e) => {
+                              setAccommodation({ ...accommodation, cijena: e.target.value });
+                              setErrorMessageForElement(false, "", "error-message-2");
+                           }}
+                        />
+                     </div>
+                     <div className='form-group' style={formGroupStyle}>
+                        <label htmlFor="kapacitet">Capacity</label>
+                        <input
+                           type="number"
+                           step="1"
+                           min="1"
+                           className='form-control'
+                           id='kapacitet'
+                           value={accommodation.kapacitet}
+                           onChange={(e) => {
+                              setAccommodation({ ...accommodation, kapacitet: e.target.value });
+                              if (e.target.value > 0) {
+                                 setErrorMessageForElement(false, "", "error-message-2");
+                              }
+                              else {
+                                 setErrorMessageForElement(true, "Capacity needs to be at least 1.", "error-message-2")
+                              }
+                           }}
+                        />
+                     </div>
+                     <div className='form-group' style={formGroupStyle}>
+                        <label htmlFor="brojParkirnihMjesta">Number of parking spots</label>
+                        <input
+                           type="number"
+                           step="1"
+                           min="0"
+                           className='form-control'
+                           id='brojParkirnihMjesta'
+                           value={accommodation.brojparkirnihmjesta}
+                           onChange={(e) => {
+                              setAccommodation({ ...accommodation, brojparkirnihmjesta: e.target.value });
+                              if (e.target.value >= 0) {
+                                 setErrorMessageForElement(false, "", "error-message-2");
+                              }
+                              else {
+                                 setErrorMessageForElement(true, "Number of parking spots needs to be at least 0.", "error-message-2")
+                              }
+                           }}
+                        />
+                     </div>
+                     <div className="form-group">
+                        <input type="submit" className="btn btn-primary" value="Send" />
+                     </div>
+                  </form>
                </div>
             </Modal.Body>
-            <Modal.Footer>
-               <a className="btn btn-primary" onClick={handleChangeData}>
-                  Send
-               </a>
-            </Modal.Footer>
          </Modal>
 
          <Modal show={showSuccessModal} onHide={() => setShowSuccessModal(false)}>
