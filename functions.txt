@@ -1,9 +1,0 @@
-bool login(formData);
-bool userExists(userName, email);
-void setErrorMessage(error, message);
-JSON[] uloge();
-JSON getAccommodation(id);
-JSON[] getRequestTypes();
-JSON getUserId();
-JSON[] getAccommodationTypes();
-JSON[] allAccommodations();
