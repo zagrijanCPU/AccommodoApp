@@ -28,6 +28,7 @@ const SearchResult = () => {
    }
 
    const searchResult = async () => {
+      // console.log(data);
       try {
          const response = await fetch(`${baseUrl}/api/data/findAccommodations`, {
             method: "POST",

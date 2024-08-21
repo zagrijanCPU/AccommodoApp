@@ -23,8 +23,8 @@ const ShowGuests = () => {
 
             if (response.ok) {
                const data = await response.json();
-               console.log(data);
-               setAllGuests(data);
+               // console.log(data);
+               setAllGuests(data.guests);
                setPageCount(Math.ceil(data.totalCount / pageSize));
             }
          } catch (error) {

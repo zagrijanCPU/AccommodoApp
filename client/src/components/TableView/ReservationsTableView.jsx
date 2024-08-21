@@ -28,6 +28,16 @@ const ReservationsTableView = (props) => {
       check();
    }, []);
 
+   const formattedDate = (date) => {
+      let day = date.getDate();
+      let month = date.getMonth() + 1;
+      let year = date.getFullYear();
+      day = day < 10 ? '0' + day : day;
+      month = month < 10 ? '0' + month : month;
+
+      return `${day}-${month}-${year}`;
+   }
+
    return (
       <div className='container mt-5'>
          <div className="d-flex justify-content-end">
@@ -44,7 +54,7 @@ const ReservationsTableView = (props) => {
             <thead>
                <tr>
                   <th>Reservation Id</th>
-                  <th>Time of Stay</th>
+                  <th>Comming - Leaving</th>
                   <th>Accommodation Name</th>
                   <th>Accommodation Type</th>
                   <th>Location</th>
@@ -55,7 +65,7 @@ const ReservationsTableView = (props) => {
                {items.map(item => (
                   <tr key={item.idrezervacija} className='claim-row'>
                      <td>{item.idrezervacija}</td>
-                     <td>{`${item.datdolaska.split("T")[0].split("-").reverse().join("-")} - ${item.datodlaska.split("T")[0].split("-").reverse().join("-")}`}</td>
+                     <td>{`${formattedDate(new Date(item.datdolaska))} - ${formattedDate(new Date(item.datodlaska))}`}</td>
                      <td>{item.nazivsmjestaja}</td>
                      <td>{item.naztipasmjestaja}</td>
                      <td>{item.lokacija}</td>

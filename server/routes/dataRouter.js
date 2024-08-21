@@ -6,14 +6,44 @@ const multer = require('multer');
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
+router.get('/getUsername', verifyToken, async (req, res) => {
+   // if (req.user.nazuloga !== "guest") {
+      
+   // }
+   // else {
+   //    res.status(404).json({ message: "You don't have permission for this" });
+   // }
+
+   try {
+      const query = `SELECT korisnickoime
+                     FROM korisnik
+                     WHERE idkorisnik = $1`;
+      
+      const { rows } = await pool.query(query, [req.user.idkorisnik]);
+      res.status(200).json(rows[0]);
+   } catch (error) {
+      console.error('Greška prilikom izvršavanja upita:', error);
+      res.status(500).json({ error: 'Došlo je do greške prilikom izvršavanja upita.' });
+   }
+})
+
 router.get('/getAllOwners', async (req, res) => {
    try {
       const query = `SELECT idkorisnik, nazuloga, ime, prezime, korisnickoime, email 
                      FROM KORISNIK JOIN ULOGA USING(iduloga)
-                     WHERE nazuloga = 'owner'`;
+                     WHERE nazuloga = 'owner'
+                     LIMIT $1
+                     OFFSET $2`;
 
-      const { rows } = await pool.query(query);
-      res.status(200).json(rows);
+      const { rows } = await pool.query(query, [req.query.pageSize, (req.query.page - 1) * req.query.pageSize]);
+
+      const query2 = `SELECT * 
+                        FROM korisnik JOIN uloga using(iduloga)
+                        WHERE nazuloga = 'owner'`;
+      
+      const { rowCount } = await pool.query(query2);
+
+      res.status(200).json({ owners: rows, totalCount: rowCount });
    } catch (err) {
       console.error('Greška prilikom izvršavanja upita:', err);
       res.status(500).json({ error: 'Došlo je do greške prilikom izvršavanja upita.' });
@@ -24,10 +54,18 @@ router.get('/getAllGuests', async (req, res) => {
    try {
       const query = `SELECT idkorisnik, nazuloga, ime, prezime, korisnickoime, email 
                      FROM KORISNIK JOIN ULOGA USING(iduloga)
-                     WHERE nazuloga = 'guest'`;
+                     WHERE nazuloga = 'guest'
+                     LIMIT $1
+                     OFFSET $2`;
 
-      const { rows } = await pool.query(query);
-      res.status(200).json(rows);
+      const { rows } = await pool.query(query, [req.query.pageSize, (req.query.page - 1) * req.query.pageSize]);
+      const query2 = `SELECT * 
+                        FROM korisnik JOIN uloga using(iduloga)
+                        WHERE nazuloga = 'guest'`;
+      
+      const { rowCount } = await pool.query(query2);
+
+      res.status(200).json({ guests: rows, totalCount: rowCount });
    } catch (err) {
       console.error('Greška prilikom izvršavanja upita:', err);
       res.status(500).json({ error: 'Došlo je do greške prilikom izvršavanja upita.' });
@@ -84,6 +122,64 @@ router.get('/accommodationTypes', async (req, res) => {
       res.status(500).json({ error: 'Došlo je do greške prilikom izvršavanja upita.' });
    }
 });
+
+router.get('/recommendedLocations', async (req, res) => {
+   try {
+      const query = `SELECT grad, drzava
+                     FROM smjestaj
+                     GROUP BY grad, drzava`;
+      
+      const { rows } = await pool.query(query);
+
+      res.status(200).json(rows);
+   } catch (error) {
+      console.error('Error:', error);
+      res.status(500).json({ message: 'Failed to get locations' });
+   }
+});
+
+
+router.post('/recommendedAccommodations', async (req, res) => {
+   try {
+      const { dict } = req.body;
+      const whereClauses = Object.keys(dict).map((key, index) => {
+         return `${key} = $${index + 1}`;
+      }).join(" AND ");
+
+      const values = Object.values(dict);
+
+      const query = `SELECT *
+                     FROM smjestaj JOIN tip_smjestaja USING(idtipsmjestaja)
+                     WHERE ${whereClauses}`;
+      
+      const { rows } = await pool.query(query, values);
+
+      res.json(rows);
+   } catch (error) {
+      console.error('Error:', error);
+      res.status(500).json({ message: 'Failed to get accommodations' });
+   }
+});
+
+router.get('/bestAccommodations', async(req, res) => {
+   try {
+      const query = `SELECT idsmjestaj, grad, drzava, profilnaslika, nazivsmjestaja, 
+                           ROUND(AVG(ocjena), 2) AS prosjek, COUNT(ocjena) AS brojOcjena 
+                     FROM recenzija JOIN smjestaj USING(idsmjestaj)
+                     WHERE vidljiv = true
+                     GROUP BY idsmjestaj, grad, drzava, profilnaslika, nazivsmjestaja
+                     ORDER BY prosjek DESC
+                     LIMIT 5`;
+      
+      const { rows } = await pool.query(query);
+
+      res.status(200).json(rows);
+   } catch (error) {
+      console.error('Error:', error);
+      res.status(500).json({ message: 'Failed to get accommodations' });
+   }
+})
+
 
 router.get('/getAccommodation', async (req, res) => {
    try {
@@ -852,6 +948,27 @@ router.post('/findAccommodations', async (req, res) => {
       res.status(500).json({ message: 'Failed to get accommodations' });
    }
 });
+
+
+router.post('/checkAvailability', async (req, res) => {
+   try {
+      const { datDolaska, datOdlaska } = req.body;
+      const idSmjestaj = req.query.id;
+      console.log(datDolaska, datOdlaska, idSmjestaj);
+      const query = `SELECT *
+                        FROM REZERVACIJA
+                        WHERE idsmjestaj = $1 AND datdolaska < $2 AND datodlaska > $3
+                        AND otkazano = false`;
+      
+      const {rowCount} = await pool.query(query, [idSmjestaj, datOdlaska, datDolaska]);
+      console.log(rowCount);
+      res.status(200).json(rowCount);
+
+   } catch (error) {
+      console.error('Error:', error);
+      res.status(500).json({ message: 'Failed to get accommodation' });  
+   }
+})
 
 
 router.get('/getAllLocations', async (req, res) => {

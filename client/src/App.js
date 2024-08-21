@@ -16,6 +16,7 @@ import ShowAccommodation from './components/Accommodations/ShowAccommodation';
 import SearchResult from './components/SearchResult';
 import Reservations from './components/Reservations/Reservations';
 import ShowUsers from './components/Users/ShowUsers';
+import RecommendedAccommodations from './components/Accommodations/RecommendedAccommodations';
 
 function App() {
   return (
@@ -37,6 +38,7 @@ function App() {
           <Route path="/searchResult" element={<SearchResult />} />
           <Route path="/myReservations" element={<Reservations />} />
           <Route path="/allUsers" element={<ShowUsers />} />
+          <Route path="/recommendation" element={<RecommendedAccommodations />} />
         </Routes>
       </Router>
     </div>

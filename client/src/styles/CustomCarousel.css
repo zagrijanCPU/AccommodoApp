@@ -1,0 +1,29 @@
+.slick-arrow {
+   display: block;
+   background: #fff;
+   border-radius: 50%;
+   padding: 10px;
+   cursor: pointer;
+   box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+   position: absolute;
+   top: 50%;
+   transform: translateY(-50%);
+   z-index: 1;
+}
+
+.slick-next {
+   right: 10px;
+}
+
+.slick-prev {
+   left: 10px;
+}
+
+.link{
+   text-decoration: none;
+   color: black;
+}
+
+.link:hover{
+   border-color: black;
+}

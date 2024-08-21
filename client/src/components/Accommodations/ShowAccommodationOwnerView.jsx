@@ -4,6 +4,7 @@ import { getAccommodation, setErrorMessage } from "../Functions";
 import { baseUrl, getImageSource, storedToken } from "../../App";
 import { useParams } from "react-router-dom";
 import CustomCalendar from "../Calendars/CustomCalendar";
+import ViewRatings from "../Ratings/ViewRatings";
 
 const ShowAccommodationOwnerView = (props) => {
    var { id } = useParams();
@@ -236,6 +237,7 @@ const ShowAccommodationOwnerView = (props) => {
                      }}>Edit</a>}
 
                      <CustomCalendar intervals={intervals} />
+                     <ViewRatings idsmjestaj={accommodation.idsmjestaj} />
                   </div>
                   <Modal show={showSuccessModal} onHide={() => setShowSuccessModal(false)}>
                      <Modal.Header closeButton>

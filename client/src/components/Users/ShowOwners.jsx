@@ -24,8 +24,8 @@ const ShowOwners = () => {
 
             if (response.ok) {
                const data = await response.json();
-               console.log(data);
-               setAllOwners(data);
+               // console.log(data);
+               setAllOwners(data.owners);
                setPageCount(Math.ceil(data.totalCount / pageSize));
             }
          } catch (error) {

@@ -53,3 +53,6 @@ insert into zahtjev (idvrstazahtjeva, idvlasnik, idtipsmjestaja, nazivsmjestaja,
 values(1, 2, 1, 'Hotel Maris', 'Croatia', 'Split', 'Adresa 1a', '21000', 150, 2, 1)
 insert into zahtjev (idvrstazahtjeva, idvlasnik, idtipsmjestaja, nazivsmjestaja, drzava, grad, adresa, postanskibroj, cijena, kapacitet, brojparkirnihmjesta)
 values(1, 3, 2, 'Apartments ***', 'Croatia', 'Zagreb', 'Potok 4', '10000', 50, 3, 1)
+
+insert into recenzija (idgost, idsmjestaj, tekst, ocjena, vidljiv)
+values(6, 1, 'Svidio mi se smještaj.', 5, true)

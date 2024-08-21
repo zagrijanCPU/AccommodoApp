@@ -8,6 +8,8 @@ const Accommodations = (props) => {
    const location = useLocation();
    const queryParams = new URLSearchParams(location.search);
 
+   console.log(accommodations);
+
    return (
       <div className="d-flex justify-content-center flex-wrap gap-5 mt-5">
          {
@@ -18,7 +20,7 @@ const Accommodations = (props) => {
                      <h4 className="card-title">{item.nazivsmjestaja}</h4>
                      <p className="card-text">Accommodation Type: {item.naztipasmjestaja}</p>
                      {
-                        queryParams.size > 0 ? 
+                        queryParams.size == 5 ? 
                            <a href={`/accommodation/${item.idsmjestaj}?city=${queryParams.get('city')}&country=${queryParams.get('country')}&commingDate=${queryParams.get('commingDate')}&leavingDate=${queryParams.get('leavingDate')}&numberOfGuests=${queryParams.get('numberOfGuests')}`} className="btn btn-primary">More details</a>
                            :
                            <a href={`/accommodation/${item.idsmjestaj}`} className="btn btn-primary">More details</a>

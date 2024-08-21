@@ -170,6 +170,24 @@ export const getAccommodationTypes = async () => {
 
 
 // Home.jsx
+
+export const getUsername = async () => {
+   if (storedToken) {
+      const response = await fetch(`${baseUrl}/api/data/getUsername`, {
+         method: "GET",
+         headers: {
+            "Content-Type": "application/json",
+            "Authorization": storedToken
+         }
+      })
+
+      if (response.ok) {
+         const data = await response.json();
+         return data.korisnickoime;
+      }
+   }
+}
+
 export const getAccommodations = async () => {
    const response = await fetch(`${baseUrl}/api/data/allAccommodations`, {
       method: "GET",
@@ -184,6 +202,33 @@ export const getAccommodations = async () => {
    }
 }
 
+export const getRecommendedLocations = async () => {
+   const response = await fetch(`${baseUrl}/api/data/recommendedLocations`, {
+      method: "GET",
+      headers: {
+         "Content-Type": "application/json"
+      }
+   })
+
+   if (response.ok) {
+      const data = await response.json();
+      return data;
+   }
+};
+
+
+export const getBestAccommodations = async () => {
+   const response = await fetch(`${baseUrl}/api/data/bestAccommodations`, {
+      method: "GET",
+      headers: {
+         "Content-Type": "application/json"
+      }
+   })
+   if (response.ok) {
+      const data = await response.json();
+      return data;
+   }
+}
 
 // TableView.jsx
 export const handleCancelReservation = async (id) => {

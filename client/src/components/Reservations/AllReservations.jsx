@@ -23,7 +23,7 @@ const AllReservations = () => {
 
             if (response.ok) {
                const data = await response.json();
-               console.log(data);
+               // console.log(data);
                setReservations(data.reservations);
                setPageCount(Math.ceil(data.totalCount / pageSize));
             }

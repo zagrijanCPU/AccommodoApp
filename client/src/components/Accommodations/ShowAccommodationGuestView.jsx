@@ -10,6 +10,12 @@ import AddRating from "../Ratings/AddRating";
 import Loading from "../Loading/Loading";
 
 const ShowAccommodationGuestView = (props) => {
+
+   const formGroupStyle = {
+      margin: '10px'
+   }
+
+
    const location = useLocation();
    const queryParams = new URLSearchParams(location.search);
    const accommodation = props.accommodation;
@@ -24,6 +30,74 @@ const ShowAccommodationGuestView = (props) => {
    const [loading, setLoading] = useState(true);
    const [creditCardCVC, setCreditCardCVC] = useState("");
    const navigate = useNavigate();
+
+
+   const [searchTerm, setSearchTerm] = useState((queryParams.get("city") ? queryParams.get("city") : accommodation.grad) + ", " + (queryParams.get("country") ? queryParams.get("country") : accommodation.drzava));
+   const [commingDate, setCommingDate] = useState(queryParams.get("commingDate") ? queryParams.get("commingDate") : "");
+   const [leavingDate, setLeavingDate] = useState(queryParams.get("leavingDate") ? queryParams.get("leavingDate") : "");
+   const [numberOfGuests, setNumberOfGuests] = useState(queryParams.get("numberOfGuests") ? queryParams.get("numberOfGuests") : "");
+   const dateToday = new Date().toISOString().split("T")[0];
+   const [nextCorrectDate, setNextCorrectDate] = useState("");
+
+
+   const updateNextCorrectDate = (date) => {
+      if (date) {
+         var updatedDate = new Date(date);
+         updatedDate.setDate(updatedDate.getDate() + 1);
+         setNextCorrectDate(updatedDate.toISOString().split("T")[0]);
+         console.log(updatedDate.toISOString());
+      }
+   }
+
+
+   const validationDates = () => {
+      if (searchTerm == "" ||
+         commingDate == "" ||
+         leavingDate == "" ||
+         numberOfGuests == ""
+      ) {
+         setErrorMessage(true, "All fields are required!");
+         return false;
+      }
+
+      return true;
+   }
+
+   const handleSubmit = async (e) => {
+      e.preventDefault();
+
+      if (!validationDates()) {
+         return;
+      }
+      try {
+         const dates = {
+            datDolaska: commingDate,
+            datOdlaska: leavingDate
+         }
+         const response = await fetch(`${baseUrl}/api/data/checkAvailability?id=${accommodation.idsmjestaj}`, {
+            method: "POST",
+            headers: {
+               "Content-Type": "application/json",
+            },
+            body: JSON.stringify(dates)
+         });
+         const data = await response.json();
+         // console.log(data);
+         if (data == 0) {
+            const city = searchTerm.split(", ")[0];
+            const country = searchTerm.split(", ")[1]
+
+            navigate(`/accommodation/${accommodation.idsmjestaj}?city=${city}&country=${country}&commingDate=${commingDate}&leavingDate=${leavingDate}&numberOfGuests=${numberOfGuests}`);
+            window.location.reload();
+         }
+         else {
+            alert("These dates are not available.");
+         }
+      } catch (error) {
+         console.log("Error: ", error);
+      }
+
+   }
 
 
    const checkIfUserMadeReservation = async (id) => {
@@ -150,13 +224,70 @@ const ShowAccommodationGuestView = (props) => {
       }
    }
 
-   
+
 
    return (
       <div className="container mt-5">
          <br />
          <div className="row justify-content-center">
             <div className="col-md-6">
+               <div className="card">
+                  <div className="card-body">
+                     <div className="error-message"></div>
+                     <form onSubmit={handleSubmit} method="post">
+                        <div className="form-group" style={formGroupStyle}>
+                           <label htmlFor="date">Comming date</label>
+                           <input
+                              type="date"
+                              className="form-control"
+                              min={dateToday}
+                              value={commingDate}
+                              onChange={(e) => {
+                                 setCommingDate(e.target.value);
+                                 updateNextCorrectDate(e.target.value);
+                                 setErrorMessage(false, "");
+                              }}
+                           />
+                        </div>
+
+                        <div className="form-group" style={formGroupStyle}>
+                           <label htmlFor="date">Leaving date</label>
+                           <input
+                              type="date"
+                              className="form-control"
+                              min={nextCorrectDate}
+                              disabled={commingDate == "" ? true : false}
+                              value={leavingDate}
+                              onChange={(e) => {
+                                 setLeavingDate(e.target.value);
+                                 setErrorMessage(false, "");
+                              }}
+                           />
+                        </div>
+
+                        <div className="form-group" style={formGroupStyle}>
+                           <label htmlFor="brojGostiju">
+                              Number of guests (max: {accommodation.kapacitet})
+                           </label>
+                           <input
+                              type="number"
+                              min={1}
+                              max={accommodation.kapacitet}
+                              className="form-control"
+                              value={numberOfGuests}
+                              onChange={(e) => {
+                                 setNumberOfGuests(e.target.value);
+                                 setErrorMessage(false, "");
+                              }}
+                           />
+                        </div>
+
+                        <div className="form-group" style={formGroupStyle}>
+                           <input type="submit" className="btn btn-primary" value="Change options" />
+                        </div>
+                     </form>
+                  </div>
+               </div>
                <div className="card">
                   <img className="card-img-top" src={getImageSource(accommodation.profilnaslika)} alt="Card image" style={{ width: "100%" }} />
                   <div className="card-body">
@@ -171,8 +302,6 @@ const ShowAccommodationGuestView = (props) => {
                            if (queryParams.size == 0) {
                               if (storedToken) {
                                  alert('You must pick the dates first!');
-                                 navigate('/');
-                                 window.location.reload();
                                  return;
                               }
                               else {
@@ -204,10 +333,10 @@ const ShowAccommodationGuestView = (props) => {
                   <Loading />
                   :
                   <>
-                     {didMakeReservation && !addedRating && <AddRating idsmjestaj={accommodation.idsmjestaj } />}   
+                     {didMakeReservation && !addedRating && <AddRating idsmjestaj={accommodation.idsmjestaj} />}
                   </>
                }
-               <ViewRatings idsmjestaj={accommodation.idsmjestaj } />
+               <ViewRatings idsmjestaj={accommodation.idsmjestaj} />
             </div>
          </div>
 
@@ -215,66 +344,66 @@ const ShowAccommodationGuestView = (props) => {
             <Modal.Header closeButton>
                <Modal.Title>"Enter your card info"</Modal.Title>
             </Modal.Header>
-               <Modal.Body>
-                  <div className='error-message'></div>
-                  <div className='form-group'>
-                     <label htmlFor='cardNumber'>Credit card number:</label>
-                     <input
-                        type='text'
-                        className='form-control'
-                        id='cardNumber'
-                        value={creditCardNumber}
-                        onChange={(e) => {
-                           handleCardNumberInput(e);
-                           setErrorMessage(false, "");
-                        }
-                        }
-                        placeholder='0000 0000 0000 0000'
-                        maxLength={19}
-                     />
-                  </div>
-                  <div className='form-group'>
-                     <label htmlFor='cardName'>Name and surname:</label>
-                     <input type='text'
-                        className='form-control'
-                        id='cardName'
-                        value={creditCardName}
-                        placeholder='John Doe'
-                        onChange={(e) => {
-                           handleCardNameInput(e);
-                           setErrorMessage(false, "");
-                        }} />
-                  </div>
-                  <div className='form-group'>
-                     <label htmlFor='cardExpirationDate'>Expiration date:</label>
-                     <input
-                        type="text"
-                        className='form-control'
-                        id='cardExpirationDate'
-                        value={creditCardExpirationDate}
-                        onChange={(e) => {
-                           handleExpirationDateInput(e);
-                           setErrorMessage(false, "");
-                        }}
-                        placeholder="MM/YY"
-                        maxLength={5}
-                     />
-                  </div>
-                  <div className='form-group'>
-                     <label htmlFor='cardCVC'>CVC:</label>
-                     <input type='text'
-                        className='form-control'
-                        id='cardCVC'
-                        value={creditCardCVC}
-                        placeholder='000'
-                        onChange={(e) => {
-                           handleCardCVCInput(e);
-                           setErrorMessage(false, "");
-                        }}
-                        maxLength={3}
-                     />
-                  </div>
-               </Modal.Body>
+            <Modal.Body>
+               <div className='error-message'></div>
+               <div className='form-group'>
+                  <label htmlFor='cardNumber'>Credit card number:</label>
+                  <input
+                     type='text'
+                     className='form-control'
+                     id='cardNumber'
+                     value={creditCardNumber}
+                     onChange={(e) => {
+                        handleCardNumberInput(e);
+                        setErrorMessage(false, "");
+                     }
+                     }
+                     placeholder='0000 0000 0000 0000'
+                     maxLength={19}
+                  />
+               </div>
+               <div className='form-group'>
+                  <label htmlFor='cardName'>Name and surname:</label>
+                  <input type='text'
+                     className='form-control'
+                     id='cardName'
+                     value={creditCardName}
+                     placeholder='John Doe'
+                     onChange={(e) => {
+                        handleCardNameInput(e);
+                        setErrorMessage(false, "");
+                     }} />
+               </div>
+               <div className='form-group'>
+                  <label htmlFor='cardExpirationDate'>Expiration date:</label>
+                  <input
+                     type="text"
+                     className='form-control'
+                     id='cardExpirationDate'
+                     value={creditCardExpirationDate}
+                     onChange={(e) => {
+                        handleExpirationDateInput(e);
+                        setErrorMessage(false, "");
+                     }}
+                     placeholder="MM/YY"
+                     maxLength={5}
+                  />
+               </div>
+               <div className='form-group'>
+                  <label htmlFor='cardCVC'>CVC:</label>
+                  <input type='text'
+                     className='form-control'
+                     id='cardCVC'
+                     value={creditCardCVC}
+                     placeholder='000'
+                     onChange={(e) => {
+                        handleCardCVCInput(e);
+                        setErrorMessage(false, "");
+                     }}
+                     maxLength={3}
+                  />
+               </div>
+            </Modal.Body>
             <Modal.Footer>
                <a className="btn btn-primary" onClick={handlePayment}>Pay</a>
             </Modal.Footer>
